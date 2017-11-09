@@ -17,38 +17,101 @@ CreateLayer.RESOURCE_BINDING  = {
     ["btn_time_1"]     = { ["varname"] = "btn_time_1" ,         ["events"]={["event"]="click_color",["method"]="onClicktime_1"}},
     ["btn_time_2"]     = { ["varname"] = "btn_time_2" ,         ["events"]={["event"]="click_color",["method"]="onClicktime_2"}},
 
-    ["text_1"]         = { ["varname"] = "text_1" }, 
-    ["text_2"]         = { ["varname"] = "text_2" }, 
-    ["text_3"]         = { ["varname"] = "text_3" }, 
-    ["text_4"]         = { ["varname"] = "text_4" }, 
-    ["text_5"]         = { ["varname"] = "text_5" }, 
-    ["text_6"]         = { ["varname"] = "text_6" }, 
-    ["text_7"]         = { ["varname"] = "text_7" }, 
-    ["text_8"]         = { ["varname"] = "text_8" }, 
-    ["text_cell"]         = { ["varname"] = "text_cell" }, 
-    ["fnt_count"]         = { ["varname"] = "fnt_count" }, 
+
+    ["btn_help_1"]     = { ["varname"] = "btn_help_1" ,         ["events"]={["event"]="click_color",["method"]="onClickhelp_1"}},
+    ["btn_help_2"]     = { ["varname"] = "btn_help_2" ,         ["events"]={["event"]="click_color",["method"]="onClickhelp_2"}},
+
+    ["btn_cradtype_1"]     = { ["varname"] = "btn_cradtype_1" ,         ["events"]={["event"]="click_color",["method"]="onClickcradtype_1"}},
+    ["btn_cradtype_2"]     = { ["varname"] = "btn_cradtype_2" ,         ["events"]={["event"]="click_color",["method"]="onClickcradtype_2"}},
+
+    ["fnt_count"]      = { ["varname"] = "fnt_count" }, 
+}
+
+CreateLayer.ch_list  = {    
+    ["text_1"]         = { ["str"] = FishGF.getChByIndex(800000322) }, 
+    ["text_2"]         = { ["str"] = FishGF.getChByIndex(800000323)  }, 
+    ["text_3"]         = { ["str"] = FishGF.getChByIndex(800000324) }, 
+    ["text_4"]         = { ["str"] = FishGF.getChByIndex(800000325) }, 
+    ["text_5"]         = { ["str"] = FishGF.getChByIndex(800000326) }, 
+    ["text_6"]         = { ["str"] = FishGF.getChByIndex(800000327)  }, 
+    ["text_7"]         = { ["str"] = FishGF.getChByIndex(800000328)  }, 
+
+    ["text_8"]         = { ["str"] = FishGF.getChByIndex(800000355)  }, 
+    ["text_9"]         = { ["str"] = FishGF.getChByIndex(800000356)  }, 
+    ["text_10"]         = { ["str"] = FishGF.getChByIndex(800000355)  }, 
+    ["text_11"]         = { ["str"] = FishGF.getChByIndex(800000356)  }, 
+
+    ["text_word_count"]         = { ["str"] = FishGF.getChByIndex(800000329)  }, 
+    ["text_cell"]         = { ["str"] = FishGF.getChByIndex(800000330)  },     
 }
 
 function CreateLayer:onCreate( ... )
     self:openTouchEventListener()
 
-    for i=1,8 do
-        self["text_"..i]:setString(FishGF.getChByIndex(800000321 + i))
+    for k,v in pairs(self.ch_list) do
+        local node = self:child(k)
+        if node ~= nil then
+            node:setString(v.str)
+        end
     end
-    self.text_cell:setString(FishGF.getChByIndex(800000330))
 
     self.propList = {}
     self.createData = {}
-    self:onClickprop_1(self)
-    self:onClickcount_1(self)
-    self:onClicktime_1(self)
+    self:showType()
+
+    self:setIsCanHelpOpen(true)
 end
 
-function CreateLayer:showLayer()
+function CreateLayer:showLayer(roomPropType,roomPeopleCountType,roomDurationType,agent,roomCardType)
     self.super.showLayer(self)
-    self:onClickprop_1(self)
-    self:onClickcount_3(self)
-    self:onClicktime_1(self)    
+    self:showType(roomPropType,roomPeopleCountType,roomDurationType,agent,roomCardType)
+end
+
+function CreateLayer:showType(roomPropType,roomPeopleCountType,roomDurationType,agent,roomCardType)
+    if roomPropType == nil then --默认道具类型,0:不带怼人道具，1:带怼人道具
+        roomPropType = 1
+    end
+    if roomPeopleCountType == nil then --默认人数类型，0:2人，1:3人，2:4人
+        roomPeopleCountType = 0
+    end
+    if roomDurationType == nil then --默认时长类型,0:8分钟，1,24分钟
+        roomDurationType = 0
+    end
+    if agent == nil then --默是否代开，如果代开true，roomCardType必须=1，即使用平台房卡
+        agent = false
+    end
+    if roomCardType == nil then --默认房卡类型 0,游戏内房卡，1，平台房卡
+        roomCardType = 0
+    end
+
+    self:buttonClicked("roomPropType",roomPropType)
+    self:buttonClicked("roomPeopleCountType",roomPeopleCountType)
+    self:buttonClicked("roomDurationType",roomDurationType)
+    self:buttonClicked("agent",agent)
+    self:buttonClicked("roomCardType",roomCardType)
+
+end
+
+function CreateLayer:setIsCanHelpOpen( isCanHelpOpen)
+
+    local dis = 60
+    local showCount = 5
+    if not isCanHelpOpen then
+        dis = 80
+        showCount = 3
+    end
+
+    local firstPosY = self:child("node_1"):getPositionY()
+    for i=1,5 do
+        local node = self:child("node_"..i)
+        if i <= showCount then
+            node:setPositionY(firstPosY - (i - 1)*dis)
+            node:setVisible(true)
+        else
+            node:setVisible(false)  
+        end
+    end
+
 end
 
 function CreateLayer:onTouchBegan(touch, event)
@@ -81,27 +144,41 @@ function CreateLayer:onClicksure( sender )
 end
 
 function CreateLayer:onClickprop_1( sender )
-    self:buttonClicked("prop",1)
+    self:buttonClicked("roomPropType",1)
 end
 function CreateLayer:onClickprop_2( sender )
-    self:buttonClicked("prop",2)
+    self:buttonClicked("roomPropType",0)
 end
 
 function CreateLayer:onClickcount_1( sender )
-    self:buttonClicked("count",1)
+    self:buttonClicked("roomPeopleCountType",0)
 end
 function CreateLayer:onClickcount_2( sender )
-    self:buttonClicked("count",2)
+    self:buttonClicked("roomPeopleCountType",1)
 end
 function CreateLayer:onClickcount_3( sender )
-    self:buttonClicked("count",3)
+    self:buttonClicked("roomPeopleCountType",2)
 end
 
 function CreateLayer:onClicktime_1( sender )
-    self:buttonClicked("time",1)
+    self:buttonClicked("roomDurationType",0)
 end
 function CreateLayer:onClicktime_2( sender )
-    self:buttonClicked("time",2)
+    self:buttonClicked("roomDurationType",1)
+end
+
+function CreateLayer:onClickhelp_1( sender )
+    self:buttonClicked("agent",true)
+end
+function CreateLayer:onClickhelp_2( sender )
+    self:buttonClicked("agent",false)
+end
+
+function CreateLayer:onClickcradtype_1( sender )
+    self:buttonClicked("roomCardType",1)
+end
+function CreateLayer:onClickcradtype_2( sender )
+    self:buttonClicked("roomCardType",0)
 end
 
 --按键状态设置
@@ -115,72 +192,84 @@ end
 
 --设置按键的选择
 function CreateLayer:setBtnChoose(viewTag, btnTag)
-    if viewTag == "prop" then 
+    if viewTag == "roomPropType" then 
         self:setBtnState(self.btn_prop_1,false)
         self:setBtnState(self.btn_prop_2,false)
         if btnTag == 1 then
             self:setBtnState(self.btn_prop_1,true)
-        elseif btnTag == 2 then 
+        elseif btnTag == 0 then 
             self:setBtnState(self.btn_prop_2,true)
         end
-    elseif viewTag == "count" then 
+    elseif viewTag == "roomPeopleCountType" then 
         self:setBtnState(self.btn_count_1,false)
         self:setBtnState(self.btn_count_2,false)
         self:setBtnState(self.btn_count_3,false)
-        if btnTag == 1 then
+        if btnTag == 0 then
             self:setBtnState(self.btn_count_1,true)
-        elseif btnTag == 2 then 
+        elseif btnTag == 1 then 
             self:setBtnState(self.btn_count_2,true)
-        elseif btnTag == 3 then 
+        elseif btnTag == 2 then 
             self:setBtnState(self.btn_count_3,true)
         end
-    elseif viewTag == "time" then 
+    elseif viewTag == "roomDurationType" then 
         self:setBtnState(self.btn_time_1,false)
         self:setBtnState(self.btn_time_2,false)
-        if btnTag == 1 then
+        if btnTag == 0 then
             self:setBtnState(self.btn_time_1,true)
-        elseif btnTag == 2 then 
+        elseif btnTag == 1 then 
             self:setBtnState(self.btn_time_2,true)
         end
-
+    elseif viewTag == "agent" then 
+        self:setBtnState(self.btn_help_1,false)
+        self:setBtnState(self.btn_help_2,false)
+        if btnTag == true then
+            self:setBtnState(self.btn_help_1,true)
+        elseif btnTag == false then 
+            self:setBtnState(self.btn_help_2,true)
+        end
+    elseif viewTag == "roomCardType" then 
+        self:setBtnState(self.btn_cradtype_1,false)
+        self:setBtnState(self.btn_cradtype_2,false)
+        if btnTag == 1 then
+            self:setBtnState(self.btn_cradtype_1,true)
+        elseif btnTag == 0 then 
+            self:setBtnState(self.btn_cradtype_2,true)
+        end
     end
-
+    
 end
 
 function CreateLayer:buttonClicked(viewTag, btnTag)
-    print("buttonClicked---viewTag="..viewTag)
-    if btnTag ~= nil then
-        print("buttonClicked---btnTag="..btnTag)
+    if viewTag == nil then
+        print("buttonClicked---viewTag== nil --")
+        return 
     end
-
-    self:setBtnChoose(viewTag, btnTag)
-
+    if btnTag ~= nil then
+        print("buttonClicked----viewTag = ["..viewTag.."]-----btnTag = "..tostring(btnTag))        
+    end
+    
     if viewTag == "sure" then 
         local newData = FishGF.changeRoomData("roomDurationType",self.createData.roomDurationType)
         FishGI.hallScene.uiFriendRoom:setChooseType(1,newData.cardCount)
         self:hideLayer()
-    elseif viewTag == "prop" then 
-        if btnTag == 1 then
-            self.createData.roomPropType = 1
-        elseif btnTag == 2 then 
-            self.createData.roomPropType = 0
+    elseif viewTag == "roomPropType" then 
+        self.createData[viewTag] = btnTag
+    elseif viewTag == "roomPeopleCountType" then 
+        self.createData[viewTag] = btnTag
+    elseif viewTag == "roomDurationType" then 
+        self.createData[viewTag] = btnTag
+    elseif viewTag == "agent" then 
+        self.createData[viewTag] = btnTag
+        self:buttonClicked("roomCardType", 1)
+    elseif viewTag == "roomCardType" then --房卡类型 roomCardType:0,游戏内房卡，1，平台房卡
+        if self.createData.agent == true and btnTag == 0 then
+            FishGF.showSystemTip(nil, 800000181, 3)
+            return 
         end
-    elseif viewTag == "count" then 
-        if btnTag == 1 then
-            self.createData.roomPeopleCountType = 0
-        elseif btnTag == 2 then 
-            self.createData.roomPeopleCountType = 1
-        elseif btnTag == 3 then 
-            self.createData.roomPeopleCountType = 2
-        end
-    elseif viewTag == "time" then 
-        if btnTag == 1 then
-            self.createData.roomDurationType = 0
-        elseif btnTag == 2 then 
-            self.createData.roomDurationType = 1
-        end
-
+        self.createData[viewTag] = btnTag
     end
+
+    self:setBtnChoose(viewTag, btnTag)
 
 end
 

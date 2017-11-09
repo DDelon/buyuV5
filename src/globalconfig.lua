@@ -115,7 +115,7 @@ PAY_CONFIG={
 -- AppID：11
 -- 渠道ID：200
 -- AppKey：840336fab6e3edba46f3a547a337da39
-HALL_APP_VERSION ={1,4,1}; --大厅版本好(C++版本号)
+HALL_APP_VERSION ={1,5,1}; --大厅版本好(C++版本号)
 --热更新地址
 function GET_UPDATE_URL(vert)  
     vert=vert or HALL_APP_VERSION

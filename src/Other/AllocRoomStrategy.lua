@@ -1,6 +1,6 @@
 local AllocRoomStrategy = class("AllocRoomStrategy")
-local oldRoomTab = {611, 636}
-local newRoomTab = {527, 606}
+local oldRoomTab = {527, 606}
+local newRoomTab = {609}
 
 function AllocRoomStrategy.create()
 	local obj = AllocRoomStrategy.new();
@@ -15,7 +15,7 @@ end
 function AllocRoomStrategy:getRoomsIndexTab(roomTab, versionTab, channelId)
 	local bigVersion = versionTab[2];
 	local rooms = {}
-	if bigVersion == 3 then
+	if bigVersion == 4 then
 		--找旧的房间
 		for key1, val1 in pairs(oldRoomTab) do
 			for key2, val2 in pairs(roomTab) do

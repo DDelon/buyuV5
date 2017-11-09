@@ -29,9 +29,61 @@ function FriendRoomManage:OnJMsg(typeName,data )
         self:OnGetFriendHistory(data);
     elseif typeName == "MSGS2CGetFriendDetail" then  --获取朋友场详细信息
         self:OnGetFriendDetail(data);
-
+    elseif typeName == "MSGS2CFriendRefreshRunningList" then  --获取正在进行的代开列表
+        self:OnFriendRefreshRunningList(data);
+    elseif typeName == "MSGS2CFriendRefreshHelpOpenList" then  --获取正在进行的代开列表
+        self:OnFriendRefreshHelpOpenList(data);
+    elseif typeName == "MSGS2CFriendRunningStart" then  --代开房间开始游戏
+        self:OnFriendRunningStart(data);
+    elseif typeName == "MSGS2CFriendPlayerStateChange" then  --玩家状态改变
+        self:OnFriendPlayerStateChange(data);
+    elseif typeName == "MSGS2CFriendDissolveRoom" then  --确认是否解散
+        self:OnFriendDissolveRoom(data);
     end
 
+end
+
+--确认是否解散
+function FriendRoomManage:OnFriendDissolveRoom(data)
+    print("------OnFriendDissolveRoom-----")
+    FishGF.waitNetManager(false,nil,"FriendDissolveRoom")
+    local event = cc.EventCustom:new("FriendDissolveRoom")
+    event._userdata = data
+    cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)
+end
+
+--玩家状态改变
+function FriendRoomManage:OnFriendPlayerStateChange(data)
+    print("------OnFriendPlayerStateChange-----")
+    local event = cc.EventCustom:new("FriendPlayerStateChange")
+    event._userdata = data
+    cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)
+end
+
+--代开房间游戏开始
+function FriendRoomManage:OnFriendRunningStart(data)
+    print("------OnFriendRunningStart-----")
+    local event = cc.EventCustom:new("FriendRunningStart")
+    event._userdata = data
+    cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)
+end
+
+--获取正在进行的代开列表
+function FriendRoomManage:OnFriendRefreshHelpOpenList(data)
+    print("------OnFriendRefreshHelpOpenList-----")
+    FishGF.waitNetManager(false,nil,"FriendRefreshHelpOpenList")
+    local event = cc.EventCustom:new("FriendRefreshHelpOpenList")
+    event._userdata = data
+    cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)
+end
+
+--获取正在进行的代开列表
+function FriendRoomManage:OnFriendRefreshRunningList(data)
+    print("------OnFriendRefreshRunningList-----")
+    FishGF.waitNetManager(false,nil,"FriendRefreshRunningList")
+    local event = cc.EventCustom:new("FriendRefreshRunningList")
+    event._userdata = data
+    cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)
 end
 
 --获取朋友场详细信息
@@ -106,9 +158,20 @@ function FriendRoomManage:sendCreateFriendRoom(propType,countType,timeType)
         roomPropType = propType,
         roomPeopleCountType = countType,
         roomDurationType = timeType,
-        appId = APP_ID
+        roomCardType = 1,
+        agent = true,
+
+        appId= APP_ID,
+        appKey = APP_KEY,
+        channelId = CHANNEL_ID,
+        version = table.concat(HALL_APP_VERSION,"."),
+        areaCode = REGION_CODE,
+        token = FishGI.hallScene.net:getSession(),
     }
+    print("--------send-------------MSGC2SCreateFriendRoom----------------")
+    dump(data)
     self:sendJMsg("MSGC2SCreateFriendRoom", data)
+
 end
 
 --加入朋友场
@@ -164,8 +227,39 @@ function FriendRoomManage:sendFriendMarkAsRead(friendGameId)
     self:sendJMsg("MSGC2SFriendMarkAsRead", data)
 end
 
+--申请刷新正在进行的代开列表
+function FriendRoomManage:sendFriendRefreshRunningList()
+    FishGF.waitNetManager(true,nil,"FriendRefreshRunningList")
+    self:sendJMsg("MSGC2SFriendRefreshRunningList", {})
+end
 
+--申请刷新历史代开列表
+function FriendRoomManage:sendFriendRefreshHelpOpenList()
+    FishGF.waitNetManager(true,nil,"FriendRefreshHelpOpenList")
+    self:sendJMsg("MSGC2SFriendRefreshHelpOpenList", {})
+end
 
+--申请添加监听代开房间的消息
+function FriendRoomManage:sendStartMonitorRunningList()
+    print("-----------sendStartMonitorRunningList--------------")
+    self:sendJMsg("MSGC2SFriendStartMonitorRunningList", {})
+end
+
+--申请取消监听代开房间的消息
+function FriendRoomManage:sendCancelMonitorRunningList()
+    print("-----------sendCancelMonitorRunningList--------------")
+    self:sendJMsg("MSGC2SFriendCancelMonitorRunningList", {})
+end
+
+--申请解散房间
+function FriendRoomManage:sendFriendDissolveRoom(friendGameId)
+    print("-----------sendFriendDissolveRoom--------------"..friendGameId)
+    FishGF.waitNetManager(true,nil,"FriendDissolveRoom")
+    local data = {
+        friendGameId = friendGameId,
+    }
+    self:sendJMsg("MSGC2SFriendDissolveRoom", data)
+end
 
 return FriendRoomManage;
 

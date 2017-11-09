@@ -22,15 +22,27 @@ LoginLayer.RESOURCE_BINDING  = {
     ["btn_wechat"]       = { ["varname"] = "btn_wechat" ,       ["events"]={["event"]="click",["method"]="onClickwechat"}},
     
     ["btn_retrieve"]     = { ["varname"] = "btn_retrieve" ,     ["events"]={["event"]="click",["method"]="onClickretrieve"}},
-    
+
+    ["node_bg_up_left"] = { ["varname"] = "node_bg_up_left"  },    
+    ["node_bg_up_right"] = { ["varname"] = "node_bg_up_right"  }, 
+    ["node_bg_down_left"] = { ["varname"] = "node_bg_down_left"  }, 
+    ["node_bg_down_right"] = { ["varname"] = "node_bg_down_right"  }, 
+
+    ["node_btn"] = { ["varname"] = "node_btn"  }, 
+    ["node_btn_qq_wechat"] = { ["varname"] = "node_btn_qq_wechat"  }, 
+    ["image_account_bg"] = { ["varname"] = "image_account_bg"  }, 
+
 }
 
 function LoginLayer:onCreate(...)
+    self:runAction(self.resourceNode_["animation"])
+    self.resourceNode_["animation"]:play("fishrun", true);
+    
     self.text_notice:setString(FishGF.getChByIndex(800000017))
-    self.text_notice:setScale(self.scaleMin_)
     local ver = "Ver"..table.concat(require("version"),".").."("..CHANNEL_ID..")";
     self.text_ver:setString(ver)
-    self.text_ver:setScale(self.scaleMin_)
+
+    self:scaleTop()
 
     self.uiChangeAccount = require("Login/ChangeAccount").create()
     self.uiChangeAccount:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
@@ -44,13 +56,16 @@ function LoginLayer:onCreate(...)
     self.uiLoginNode:setVisible(false)
     self.uiLoginNode:setScale(self.scaleMin_)
 
+    if self.node_btn.firstPosY == nil then
+        self.node_btn.firstPosY = self.node_btn:getPositionY()
+    end
+    
     local accountTab = self.uiChangeAccount:getEndAccount()
     local count = FishGI.WritePlayerData:getMaxKeys()
     if accountTab == nil or (count == 1 and accountTab["isVisitor"] ~= nil )then
         self.text_account:setString("")
         self.image_account_bg:setVisible(false)
-        self.btn_accountstart:setPositionY(cc.Director:getInstance():getWinSize().height*0.23)
-        self.btn_start:setPositionY(cc.Director:getInstance():getWinSize().height*0.23)
+        self.node_btn:setPositionY(self.node_btn_qq_wechat:getPositionY())
     else
         local account = accountTab["account"]
         local isVisitor = accountTab["isVisitor"]
@@ -59,6 +74,7 @@ function LoginLayer:onCreate(...)
         end
         self.text_account:setString(account)
         self.image_account_bg:setVisible(true)
+        self.node_btn:setPositionY(self.node_btn.firstPosY)
     end
     
     FishGI.myData = nil
@@ -75,25 +91,20 @@ function LoginLayer:onCreate(...)
     eventDispatcher:addEventListenerWithSceneGraphPriority(listener, self);
 
     if CHANNEL_ID == CHANNEL_ID_LIST.yyb then
-        self.btn_wechat:setVisible(true)
-        self.btn_qq:setVisible(true)
-        self.btn_start:setVisible(false)
-        self.btn_accountstart:setVisible(false)
-        self.btn_wechat:setPositionY(cc.Director:getInstance():getWinSize().height*0.23)
-        self.btn_qq:setPositionY(cc.Director:getInstance():getWinSize().height*0.23)
+        self.node_btn_qq_wechat:setVisible(true)
+        self.node_btn:setVisible(false)
+        self.image_account_bg:setVisible(false)
     elseif CHANNEL_ID == CHANNEL_ID_LIST.huawei then
+        self.node_btn_qq_wechat:setVisible(false)
+        self.node_btn:setVisible(true)
+        self.image_account_bg:setVisible(false)
+
         self.btn_accountstart:setVisible(false)
         self.btn_retrieve:setVisible(false)
-
-        self.btn_start:setPosition(cc.Director:getInstance():getWinSize().width*0.5, cc.Director:getInstance():getWinSize().height*0.26)
-
-        self.btn_wechat:setVisible(false)
-        self.btn_qq:setVisible(false)
+        self.btn_start:setPositionX(0)
     else
-        self.btn_wechat:setVisible(false)
-        self.btn_qq:setVisible(false)
-        self.btn_start:setVisible(true)
-        self.btn_accountstart:setVisible(true)
+        self.node_btn_qq_wechat:setVisible(false)
+        self.node_btn:setVisible(true)
     end
     if FishGF.isThirdSdk() and FishGF.isThirdSdkLogin() then
         self.btn_retrieve:setVisible(false)
@@ -103,6 +114,17 @@ function LoginLayer:onCreate(...)
     if isWifi then
         print("---------------------------------wifi connect");
     end
+end
+
+function LoginLayer:scaleTop( )
+    self.node_bg_up_left:setScale(self.scaleMin_)
+    self.node_bg_up_right:setScale(self.scaleMin_)
+    self.node_bg_down_left:setScale(self.scaleMin_)
+    self.node_bg_down_right:setScale(self.scaleMin_)
+    self.node_btn:setScale(self.scaleMin_)
+    self.node_btn_qq_wechat:setScale(self.scaleMin_)
+    self.image_account_bg:setScale(self.scaleMin_)
+
 end
 
 function LoginLayer:onEnter( )

@@ -171,13 +171,20 @@ end
 
 --初始化朋友场
 function HallManager:initFriendLayer( )
+
+    --代开房间
+    self.uiHelpOpenLayer = require("hall/FriendRoom/FriendHelpOpen/HelpOpenLayer").create()
+    self.uiHelpOpenLayer:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
+    self:addChild(self.uiHelpOpenLayer,FishCD.ORDER_LAYER_TRUE)
+    self.uiHelpOpenLayer:setVisible(false)   
+    self.uiHelpOpenLayer:setScale(self.scaleMin_)
+    
     --创建面板
     self.uiCreateLayer = require("hall/FriendRoom/CreateLayer").create()
     self.uiCreateLayer:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
     self:addChild(self.uiCreateLayer,FishCD.ORDER_LAYER_TRUE)
     self.uiCreateLayer:setVisible(false)   
     self.uiCreateLayer:setScale(self.scaleMin_)
-
 
 	self.uiFriendRoom = require("hall/FriendRoom/FriendRoom").create();
 	self:addChild(self.uiFriendRoom,1)
@@ -335,7 +342,8 @@ function HallManager:disposeExit()
     end
 
     FishGI.isNoticeClose = true
-    --nil 第一次进入大厅 0 正常退出 1超出房间最高倍数被踢   2朋友场被踢   3朋友场被解散   4朋友场结束   5自己强退   6.等待时间过长 7朋友场主动解散 8房间关闭被踢 9.断线被踢出游戏 100.未知原因 1000.小游戏退出
+    --nil 第一次进入大厅 0.正常退出 1.超出房间最高倍数被踢   2.朋友场被踢   3.朋友场被解散   4.朋友场结束   5.自己强退   6.等待时间过长 7.朋友场主动解散 8房间关闭被踢 9.断线被踢出游戏 100.未知原因 1000.小游戏退出
+                        --10.
     if FishGI.exitType == nil then
         self.net.roommanager:sendDataGetInfo();
     elseif FishGI.exitType == 1 then
@@ -666,8 +674,10 @@ function HallManager:upDataPlayerInfo( netData )
         --更新按键位置
         self.view:upDataBtnArrPos()
 
-        -- --刷新朋友场状态
-        -- FishGI.FriendRoomManage:sendGetFriendStatus();
+        --刷新朋友场代开状态
+        if self.uiHelpOpenLayer ~= nil then
+            self.uiHelpOpenLayer:isUpdateNetData()
+        end
 
         --播放音乐
         FishGI.AudioControl:playLayerBgMusic()
@@ -990,6 +1000,9 @@ function HallManager:closeAllSchedule()
     end
     if self.uiMail ~= nil then
         self.uiMail:closeAllSchedule()
+    end
+    if self.uiHelpOpenLayer ~= nil then
+        self.uiHelpOpenLayer:closeAllSchedule()
     end
     if self.uiDialCommon ~= nil then
         self.uiDialCommon:initDialAge()

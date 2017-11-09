@@ -419,7 +419,8 @@ function SkillNBomb:onTouchBegan(touch, event)
 
     self.playerSelf = FishGI.gameScene.playerManager:getMyData()
     local myWinCrystal = self.playerSelf.cannon:getDiamonds()
-    if myWinCrystal < self.price then
+    local count = self.btn.parentClasss:getFntCount()
+    if count <= 0 and myWinCrystal < self.price then
         self:stopTimer()
         self:cancelUseNBomb()
         self:onChoseState(false)

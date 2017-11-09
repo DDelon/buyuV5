@@ -9,7 +9,8 @@ FriendRoom.RESOURCE_BINDING  = {
     
     ["panel_create"]    = { ["varname"] = "panel_create"} , 
     ["panel_enter"]     = { ["varname"] = "panel_enter"  },    
-    
+    ["panel_helpopen"]     = { ["varname"] = "panel_helpopen"  },
+
     ["btn_back"]        = { ["varname"] = "btn_back" ,         ["events"]={["event"]="click",["method"]="onClickback"}}, 
     
     ["btn_rule"]        = { ["varname"] = "btn_rule" ,         ["events"]={["event"]="click_color",["method"]="onClickrule"}}, 
@@ -27,6 +28,13 @@ FriendRoom.LEFT_BTN  = {
     [4]  = { ["varname"] = "btn_prop_13"},   
 }
 
+--中间的大图标
+FriendRoom.BigRoomPanel  = {
+    {["varname"] = "panel_create",["newScale"] = 1,["newPosX"] = -270,},
+    {["varname"] = "panel_enter",["newScale"] = 1,["newPosX"] = 270,},
+    {["varname"] = "panel_helpopen",["newScale"] = 1,["newPosX"] = 600,},
+}
+
 function FriendRoom:onCreate( ... )
     self.node_friendroom:setScale(self.scaleMin_)
     self.propData = {}
@@ -42,8 +50,47 @@ function FriendRoom:onCreate( ... )
     local node_fish_enter = self.panel_enter:getChildByName("node_fish")
     node_fish_enter.animation:play("roomact", true);
 
+    local node_fish_helpopen = self.panel_helpopen:getChildByName("node_fish")
+    node_fish_helpopen.animation:play("roomact", true);
+
     self:updatePropData(13,0)
     self:updatePropData(1001,0)
+
+    for k,v in pairs(self.BigRoomPanel) do
+        local panel = self[v.varname]
+        if panel ~= nil then
+            panel.oldScale = panel:getScale()
+            panel.oldPosX = panel:getPositionX()
+            panel.newScale = v.newScale
+            panel.newPosX = v.newPosX
+        end
+    end
+
+    self:setIsCanHelpOpen(true)
+end
+
+function FriendRoom:setIsCanHelpOpen( isCanHelpOpen )
+    if isCanHelpOpen then
+        self.panel_helpopen:setVisible(true)
+        for k,v in pairs(self.BigRoomPanel) do
+            local panel = self[v.varname]
+            if panel ~= nil then
+                panel:setScale(panel.oldScale)
+                panel:setPositionX(panel.oldPosX)
+            end
+        end
+    else
+        self.panel_helpopen:setVisible(false)
+
+        for k,v in pairs(self.BigRoomPanel) do
+            local panel = self[v.varname]
+            if panel ~= nil then
+                panel:setScale(panel.newScale)
+                panel:setPositionX(panel.newPosX)
+            end
+        end
+    end
+    
 end
 
 function FriendRoom:onTouchBegan(touch, event)
@@ -84,6 +131,15 @@ function FriendRoom:onTouchEnded(touch, event)
     if cc.rectContainsPoint(rect2,locationInNode2) then
         print("-----panel_enter-------")
         self:setChooseType(2)
+    end
+
+    local s3 = self.panel_helpopen:getContentSize()
+    local locationInNode3 = self.panel_helpopen:convertToNodeSpace(curPos)
+    local rect3 = cc.rect(0,0,s3.width,s3.height)
+    if cc.rectContainsPoint(rect3,locationInNode3) then
+        print("-----panel_helpopen-------")
+        FishGI.hallScene.uiHelpOpenLayer:sendNetData("running") 
+        FishGI.hallScene.uiHelpOpenLayer:sendNetData("StartMonitor")
     end
 
 end
@@ -381,13 +437,7 @@ function FriendRoom:OnCreateFriendRoom(netData)
     local success = netData.success
     local friendRoomNo = netData.friendRoomNo
     local deskId = netData.deskId
-
     if success then
-        self.friendRoomNo = friendRoomNo
-        --弹出提示面板
-        FishGI.hallScene.uiCreateSuceed:setRoomNo(friendRoomNo)
-        FishGI.hallScene.uiCreateSuceed:showLayer()
-
         local createData = FishGI.hallScene.uiCreateLayer.createData
         local newData = FishGF.changeRoomData("roomDurationType",createData.roomDurationType)
         local cardCount = newData.cardCount
@@ -400,6 +450,18 @@ function FriendRoom:OnCreateFriendRoom(netData)
             self:updatePropData(FishCD.PROP_TAG_15,0)
             FishGMF.addTrueAndFlyProp(FishGI.myData.playerId,FishCD.PROP_TAG_13,-(cardCount - limitCardCount ),true)
         end
+
+        local agent = netData.agent
+        if agent == true then
+            FishGF.backToHall()
+            return
+        end
+
+        self.friendRoomNo = friendRoomNo
+        --弹出提示面板
+        FishGI.hallScene.uiCreateSuceed:setRoomNo(friendRoomNo)
+        FishGI.hallScene.uiCreateSuceed:showLayer()
+
         return
     end
 
@@ -421,6 +483,8 @@ function FriendRoom:OnCreateFriendRoom(netData)
             FishGF.backToHall( )
         end
         FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,FishGF.getChByIndex(800000285),callback, nil)
+    elseif errorCode == 6 then             --使用平台房卡创建房间失败的错误原因
+        FishGF.showToast(netData.webMsg)
     end
 end
 

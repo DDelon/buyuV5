@@ -14,6 +14,10 @@ UpDate.RESOURCE_BINDING = {
     ["text_sizeper"]       = { ["varname"] = "text_sizeper" },   
     ["text_message"]       = { ["varname"] = "text_message" },  
 
+    ["node_bg_up_left"] = { ["varname"] = "node_bg_up_left"  },    
+    ["node_bg_down_left"] = { ["varname"] = "node_bg_down_left"  }, 
+    ["node_bg_down_right"] = { ["varname"] = "node_bg_down_right"  }, 
+
 }
 
 function UpDate:onCreate( ... )
@@ -33,10 +37,18 @@ function UpDate:onCreate( ... )
     --end,2,false) 
 
     self:isCheckVer(true)
+    
+    self:scaleTop()
+end
 
+function UpDate:scaleTop( )
+    self.node_bg_up_left:setScale(self.scaleMin_)
+    self.node_bg_down_left:setScale(self.scaleMin_)
+    self.node_bg_down_right:setScale(self.scaleMin_)
 end
 
 function UpDate:onEnter( )
+    print("----------UpDate:onEnter-----------")
     --FishGMF.setGameState(0)
 end
 

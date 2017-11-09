@@ -595,7 +595,7 @@ function FishGF.createCloseSocketNotice(str,index)
                 if FishGI.hallScene~= nil and FishGI.hallScene.net ~= nil and FishGI.hallScene.net.CloseSocket ~= nil then
                     FishGI.hallScene.net:CloseSocket();
                 end
-                --curScene.view:changeAccount();              
+                curScene.view:changeAccount();              
             elseif sceneName == "hall" then
                 FishGI.hallScene.net:CloseSocket();
                 FishGI.eventDispatcher:removeAllListener();
@@ -1577,6 +1577,9 @@ end
 
 --朋友场数据转换  道具类型,0:不带怼人道具，1:带怼人道具   人数类型，0:2人，1:3人，2:4人   时长类型,0:8分钟，1,24分钟
 function FishGF.changeRoomData(key,val)
+    if val == nil then
+        return 
+    end
     local result = {}
     if key == "roomDurationType" then
         if val == 0 then
@@ -1586,7 +1589,10 @@ function FishGF.changeRoomData(key,val)
             result.cardCount = 3
             result.str = FishGF.getChByIndex(800000328)
         end
+        local val = string.split(result.str,"(")
+        result.timeStr = val[1]
         result.time = 8*60*result.cardCount
+        result.timeCount = 8*result.cardCount
     elseif key == "roomPeopleCountType" then
         if val == 0 then
             result.count = 2

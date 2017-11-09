@@ -656,14 +656,23 @@ MSGC2SCreateFriendRoom = 104 {
 	roomPropType : int = 1;道具类型,0:不带怼人道具，1:带怼人道具
 	roomPeopleCountType : int = 2;人数类型，0:2人，1:3人，2:4人
 	roomDurationType : int = 3;时长类型,0:8分钟，1,24分钟
-	appId : string = 4;appId
+	roomCardType : int = 5;房卡类型 0,游戏内房卡，1，平台房卡
+	agent : bool = 6;是否代开，如果代开，roomCardType必须=1，即使用平台房卡
+	appId : string = 7;appid,使用平台房卡必须传
+	appKey : string = 8;appkey,使用平台房卡必须传
+	channelId : string = 9;channelId使用平台房卡必须传
+	version : string = 10;version,使用平台房卡必须传
+	areaCode : string = 11;地区码,使用平台房卡必须传
+	token : string = 12;token使用平台房卡必须传
 }
 
 MSGS2CCreateFriendRoom = 105 {
 	success : bool = 1
 	friendRoomNo : string = 2
 	deskId : int = 3
-	errorCode : int = 4; 0:成功， 1:已经在房间，2:无可用房间,3:无房卡,4:朋友场服务器已关闭,5,参数不合法
+	errorCode : int = 4; 0:成功， 1:已经在房间，2:无可用房间,3:无房卡,4:朋友场服务器已关闭,5,参数不合法,6,使用平台房卡失败，具体错误消息见webMsg字段
+	webMsg : string = 5; 使用平台房卡创建房间失败的错误原因
+	agent : bool = 6;是否代开
 }
 
 MSGC2SJoinFriendRoom = 106 {;加入朋友场
@@ -1020,5 +1029,64 @@ MSGS2CForbidAccount = 178 {
 MSGS2CFriendStartTimeline = 179 {
 	timelineId : int = 1;鱼线id
 }
+
+MSGC2SFriendRefreshRunningList = 180 {;申请刷新正在进行的代开列表
+}
+
+MSGS2CFriendRefreshRunningList = 181 {;正在进行的代开列表
+	list : []MSGFriendRunningItemData = 1;
+}
+
+MSGC2SFriendRefreshHelpOpenList = 182 {;申请刷新历史代开列表
+}
+
+MSGS2CFriendRefreshHelpOpenList = 183 {;历史代开列表
+	list : []MSGFriendRunningItemData = 1;
+}
+
+MSGFriendRunningItemData = 184 {;代开房间的数据
+	friendGameId : string = 1;朋友场的场次id
+	createTime : string = 2;创建时间,格式hh:mm:ss-hh:mm:ss
+	roomPropType : int = 3;道具类型,0:不带怼人道具，1:带怼人道具
+	roomPeopleCountType : int = 4;人数类型，0:2人，1:3人，2:4人
+	roomDurationType : int = 5;时长类型,0:8分钟，1,24分钟
+	roomCardType : int = 6;房卡类型 0,游戏内房卡，1，平台房卡
+	playerList : []MSGFriendPlayerItemData = 7;玩家列表
+	friendRoomNo : string = 8;房间号
+}
+
+MSGFriendPlayerItemData = 185 {;代开房间进入玩家的数据
+	playerId : int = 1;玩家id
+	nickName : string = 2;玩家昵称
+	headPath : string = 3;玩家头像
+	state : int = 4;玩家状态，0:刚进入，1:已准备，2:离开
+	score : int = 5;玩家积分
+	chairId : int = 6;玩家椅子id
+}
+
+MSGS2CFriendRunningStart = 186 {;代开房间开始游戏
+	friendGameId : string = 1;朋友场的场次id
+}
+
+MSGC2SFriendStartMonitorRunningList = 187 {;申请添加监听代开房间的消息
+}
+
+MSGC2SFriendCancelMonitorRunningList = 188 {;申请取消监听代开房间的消息
+}
+
+MSGS2CFriendPlayerStateChange = 189 {;玩家状态改变
+	friendGameId : string = 1;朋友场的场次id
+	playerData : MSGFriendPlayerItemData = 2;玩家数据
+}
+
+MSGC2SFriendDissolveRoom = 190 {;申请解散房间
+	friendGameId : string = 1;朋友场的场次id
+}
+
+MSGS2CFriendDissolveRoom = 191 {;确认是否解散
+	errorCode : int = 1;0成功，1，房间不存在，2，游戏已开始，3不是房主
+	friendGameId : string = 2;朋友场的场次id
+}
+
 ]]
 return a
