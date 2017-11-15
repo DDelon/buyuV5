@@ -121,7 +121,7 @@ end
 
 function TaskProcess:isValueInTable(value, tab)
     for i,v in ipairs(tab) do
-        if value == v then
+        if tonumber(value) == tonumber(v) then
             return true
         end
     end

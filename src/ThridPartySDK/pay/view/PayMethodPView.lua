@@ -4,7 +4,7 @@
 --
 local PayMethod = class("PayMethod", require("ThridPartySDK/pay/view/ViewPop"))
 
-PayMethod.PAY_RELATION={[1]="wechat",[2]="alipay_client",[3]="unionpay_client",[4]="appstore"}
+PayMethod.PAY_RELATION={[1]="wechatH5",[2]="alipayH5",[3]="unionpay_client",[4]="appstore"}
 
 PayMethod.RESOURCE_FILENAME="ui/store/pay_method.lua"
 
@@ -53,15 +53,11 @@ function PayMethod:onCreate(...)
     end 
     self.lableX =0       --富文本标签的开始位置
 
-	if self.data.type ==PROP_ID_MONEY then
-		self.data.name = self.data.count .."万豆"
-	else
-		self.data.name =self.data.name or FishCD.PROPNAME[self.data.type].."x"..self.data.count
-	end
+	local productName = self.data.num..self.data.unit;
+	local price = self.data.money/100;
 
-	self.data.name = self.data.name or FishCD.PROPNAME[self.data.type]
-	self.txt_subject:setString(tostring(self.data.name)) -- 商品名称
-	self.txt_price:setString("￥"..tostring(self.data.price)) --商品价格
+	self.txt_subject:setString(tostring(productName)) -- 商品名称
+	self.txt_price:setString("￥"..tostring(price)) --商品价格
 	self:showTips() --隐藏兑换提示 
  	for i,v in ipairs(PayMethod.BUTTON) do
 	 	local btn= self:child("btn_pay_"..i)

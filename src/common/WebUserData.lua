@@ -285,6 +285,18 @@ function UserData:isActivited()
    return  checkint(userWebData.attr)>0
 end
 
+--自动代开
+function UserData:isAutoOpen()
+    lazyInit_()
+   return  checkint(userWebData.rcas)>0
+end
+
+--普通代开
+function UserData:isNormalOpen()
+    lazyInit_()
+   return  checkint(userWebData.rcapc)>0
+end
+
 function UserData:isVerifyRealName()
     lazyInit_()
     return userWebData.is_card == 1 and true or false

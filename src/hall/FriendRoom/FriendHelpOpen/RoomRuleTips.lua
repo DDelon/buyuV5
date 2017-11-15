@@ -4,19 +4,19 @@ RoomRuleTips.AUTO_RESOLUTION   = false
 RoomRuleTips.RESOURCE_FILENAME = "ui/hall/friend/friendhelpopen/uiroomrule"
 RoomRuleTips.RESOURCE_BINDING  = {    
     ["panel"]         = { ["varname"] = "panel" }, 
-    ["img_bg"]         = { ["varname"] = "img_bg" }, 
+    ["img_bg"]        = { ["varname"] = "img_bg" }, 
     
-    ["text_roomno"]         = { ["varname"] = "text_roomno" }, 
-    ["text_duration"]         = { ["varname"] = "text_duration" }, 
-    ["text_prop"]         = { ["varname"] = "text_prop" }, 
-    ["text_count"]         = { ["varname"] = "text_count" }, 
+--    ["text_roomno"]   = { ["varname"] = "text_roomno" }, 
+    ["text_duration"] = { ["varname"] = "text_duration" }, 
+    ["text_prop"]     = { ["varname"] = "text_prop" }, 
+    ["text_count"]    = { ["varname"] = "text_count" }, 
 }
 
 RoomRuleTips.ch_list  = {    
-    ["text_word_roomno"]         = { ["str"] = FishGF.getChByIndex(800000314) }, 
-    ["text_word_duration"]         = { ["str"] = FishGF.getChByIndex(800000358) },
-    ["text_word_prop"]         = { ["str"] = FishGF.getChByIndex(800000359) },
-    ["text_word_count"]         = { ["str"] = FishGF.getChByIndex(800000360) },   
+    --["text_word_roomno"]   = { ["str"] = FishGF.getChByIndex(800000314) }, 
+    ["text_word_duration"] = { ["str"] = FishGF.getChByIndex(800000358) },
+    ["text_word_prop"]     = { ["str"] = FishGF.getChByIndex(800000359) },
+    ["text_word_count"]    = { ["str"] = FishGF.getChByIndex(800000360) },   
 }
 RoomRuleTips.topDis = 6
 
@@ -65,7 +65,7 @@ function RoomRuleTips:onTouchBegan(touch, event)
 end
 
 function RoomRuleTips:setRoomId(roomId)
-    self.text_roomno:setString(roomId);
+    --self.text_roomno:setString(roomId);
 end
 
 function RoomRuleTips:setRoomDuration(duration)
@@ -107,7 +107,7 @@ function RoomRuleTips:openRuleTip(data)
 end
 
 function RoomRuleTips:hideRuleTip(data)
-    print("--------hideRuleTip-----------")
+    --print("--------hideRuleTip-----------")
     --data = data._userdata
     if not self:isVisible() then
         return 

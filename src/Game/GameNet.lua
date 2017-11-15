@@ -606,15 +606,18 @@ function GameNet:OnFishGroupNotify(data)
     FishGF.showSystemTip(message)
 
     local function clearFunc()
+        FishGI.isFishGroupCome = false;
         if FishGI.gameScene.isFishCome then
             FishGI.gameScene.isFishCome = false;
             return;
         end
+        
         FishGI.GameEffect:fishGroupCome()
         LuaCppAdapter:getInstance():fishAccelerateOut();
         
         
     end
+    FishGI.isFishGroupCome = true;
     FishGF.delayExcute(14-FishCD.FISH_GROUP_COMING_CLEAR_TIME, clearFunc)
 end
 

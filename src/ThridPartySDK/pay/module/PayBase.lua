@@ -13,6 +13,11 @@ function PayBase:init()
 	self.callfunc = nil;
 end
 
+function PayBase:saveData(payInfo)
+	self.money = payInfo.money;
+	self.detail = payInfo.detail;
+end
+
 function PayBase:doPay(payInfo)
 	--发起http请求订单号
 	local function callfunc(sdkCallInfo)
@@ -24,77 +29,73 @@ function PayBase:doPay(payInfo)
 		elseif device.platform == "android" then
 			print("发起安卓支付")
 			self.info = sdkCallInfo;
-			
 			self:doPayAndroid(sdkCallInfo);
 		else
 			print("暂未开放此平台的支付功能")
 		end
 	end
-
+	self:saveData(payInfo);
 	self:orderRequest(payInfo, callfunc)
 end
 
 function PayBase:orderRequest(payInfo, callfunc)
-	assert(payInfo, "pay info is invalid");
-    FishGF.waitNetManager(true,nil,"12345")
-	local printStr = json
+    FishGF.waitNetManager(true,nil,"RequestOrder")
 	local function ordercallback_(data)
-        FishGF.waitNetManager(false,nil,"12345")
+        FishGF.waitNetManager(false,nil,"RequestOrder")
         if data and data.status == 0 then
             local payArgs = checktable(data)
-            print("orderRequest data:"..json.encode(data))
             table.merge(payArgs, payInfo)
             local ext = data.ext;
             if  ext ~= nil then table.merge(payArgs, ext) end
             callfunc(payArgs)
-        	
         else
-            print("下单失败！" .. data.msg)
             --弹出提示框是否重试
         end
     end
-	log("order Request: " .. json.encode(payInfo));
 	FishGI.Dapi:OrderNew(payInfo, ordercallback_)
 end
 
-function PayBase:verifyIosReceipt_(luastr, paytype)
-    print("verify:"..luastr)
+--苹果数据审查
+function PayBase:applePayDataVerify(luastr, paytype)
     local ok, args = pcall(function()
         return loadstring(luastr)();
     end)
     if ok then
-        print("-----------------ok verify")
-		cc.UserDefault:getInstance():setStringForKey("verifydata", luastr);
-        local scheduleId = 0;
-        local oldVal = FishCD.OVER_TIME;
-		local isRecv = false;
-        FishCD.OVER_TIME = 9999;
-        FishGF.waitNetManager(true,nil,"123456")
-        local function requestVerify()
-			dump(args)
-        	FishGI.Dapi:VerifyIosReceipt(args, function(msg)
-        		if scheduleId ~= 0 then
-        			cc.Director:getInstance():getScheduler():unscheduleScriptEntry(scheduleId);
-        		end
-				if isRecv then
+		--保存审查数据
+		cc.UserDefault:getInstance():setStringForKey("applePayData", luastr);
+		--保存旧的超时时间 修改转圈超时时间
+		local oldVal = FishCD.OVER_TIME;
+		FishCD.OVER_TIME = 9999;
+		--出现屏蔽触摸层
+		FishGF.waitNetManager(true,nil,"VerifyApplePayData");
+		--用来屏蔽多次web请求之后收到多次回来的数据
+		local isReceived = false;
+
+		--发起web请求审核支付数据
+		local function verify(args)
+			local function webCallFunc(msg)
+				if isReceived then
 					return;
 				end
-	            FishGF.waitNetManager(false,nil,"123456")
-				cc.UserDefault:getInstance():setStringForKey("verifydata", "");
-	            FishCD.OVER_TIME = oldVal;
-				isRecv = true;
-	            if msg.status == 0 then
-	                local ret_tab = { status = msg.status, paytype = paytype, msg = "支付成功！" }
-	                
-	                self:onCallback_(ret_tab)
-	            else
-	                print("iap order verify failure");
-	            end
-	 
-	        end)
-        end
-        requestVerify();
-        scheduleId = cc.Director:getInstance():getScheduler():scheduleScriptFunc(requestVerify, 5, false)
+				local curScene = cc.Director:getInstance():getRunningScene();
+				curScene:stopActionByTag(6513);
+				--删除屏蔽触摸层
+				FishGF.waitNetManager(false,nil,"VerifyApplePayData")
+				--清除审查数据
+				cc.UserDefault:getInstance():setStringForKey("applePayData", "");
+				--还原超时时间
+				FishCD.OVER_TIME = oldVal;
+				isReceived = true;
+				if msg.status == 0 then
+	            	local ret_tab = { status = msg.status, paytype = paytype, msg = "支付成功！" }
+				else
+					print("apple verify data fail");
+				end
+			end
+			FishGI.Dapi:VerifyIosReceipt(args, webCallFunc)
+		end
+		verify(args);
+		FishGF.delayExcute(5, verify, args, true, 6513);
         
     else
         printf("解析ios 参数失败 %s", luastr)
@@ -102,7 +103,7 @@ function PayBase:verifyIosReceipt_(luastr, paytype)
 end
 
 function PayBase:doPayIOS(payInfo)
-	payInfo.listener = handler(self, self.onIosCallback_);
+	payInfo.listener = handler(self, self.onIosPayResult);
 	payInfo.money = tonumber(payInfo.money)/100;
 	local cfgTable = checktable(PAY_CONFIG[payInfo.type][payInfo.productType]);
 
@@ -128,37 +129,27 @@ function PayBase:doPayIOS(payInfo)
 end
 
 function PayBase:doPaySDK(payInfo)
-	local function payResult(resultInfo)
-    print("------------payResult")
-	local resultTab = json.decode(resultInfo)
-		if FishGI.GAME_STATE == 3 then
-			FishGI.gameScene.net:sendBackFromCharge()
-		end		
-        if resultTab.resultCode == 0 then
-            --成功
-            FishGF.print("------recharge succeed----")
-            if FishGI.GAME_STATE == 2 then
-				FishGF.waitNetManager(true,nil,"doPaySDK")
-				FishGI.IS_RECHARGE = 5
-				FishCD.hallScene:doAutoLogin(2);
-                --FishGI.hallScene.net.roommanager:sendDataGetInfo();
-            elseif FishGI.GAME_STATE == 3 then
-				FishGI.WebUserData:initWithUserId(FishGI.WebUserData:GetUserId())
-                FishGI.gameScene.net:sendReChargeSucceed()
-				local uiShopLayer = FishGF.getLayerByName("uiShopLayer")
-				if uiShopLayer ~= nil then
-					uiShopLayer:hideLayer(false);
-				end
-            end
-        else
-            FishGF.print("------recharge faile----")
-            FishGF.showSystemTip(nil,800000169,1);
-        end
-        --删除面板
-        cc.Director:getInstance():getRunningScene():removeChildByTag(FishCD.TAG.PAY_VIEW_TAG);
-    end
-    print("----------------do pay sdk")
-    FishGI.GameCenterSdk:trySDKPay(payInfo, payResult)
+	
+    FishGI.GameCenterSdk:trySDKPay(payInfo, handle(self, self.onSdkPayResult));
+end
+
+function PayBase:doPayAndroid(args)
+    self:addListener()
+    local javaMethodName = "doPay"
+	dump(args)
+    local jsonArgs = json.encode(args)
+    local cfgTable = PAY_CONFIG[args.type]
+    local jsonCfg = json.encode(cfgTable)
+
+
+    local javaParams = {
+        args.type,
+        jsonArgs,
+        jsonCfg,
+    }
+	local luaBridge = require("cocos.cocos2d.luaj")
+    local javaMethodSig = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V"
+    luaBridge.callStaticMethod(JAVA_CLASS_NAME, javaMethodName, javaParams, javaMethodSig)
 end
 
 function PayBase:addListener()
@@ -172,145 +163,105 @@ function PayBase:removeListener()
     luaBridge.callStaticMethod(JAVA_CLASS_NAME, "removeScriptListener")
 end
 
-function PayBase:onCallback_(luastr) 
-	local ok = false;
-	local resultInfo = nil;
-	if type(luastr) == "string" then
-		ok,resultInfo = pcall(function()         
-			return loadstring(luastr)();
-		end)
-	else
-		ok = true;
-		resultInfo = luastr;
+function PayBase:closePanel()
+		--关闭商店面板
+	local uiShopLayer = FishGF.getLayerByName("uiShopLayer");
+	if uiShopLayer ~= nil then
+		uiShopLayer:hideLayer(false);
 	end
-
-	if FishGI.GAME_STATE == 3 then
-		FishGI.gameScene.net:sendBackFromCharge()
-	end		
-	dump(resultInfo)
-	print("pay base 184")
-	
-	if ok then
-		if resultInfo.status == 0 then
-			--成功
-			FishGF.print("------recharge succeed----")
-			if not FishGI.WebUserData:isActivited() then	--"游客"
-				FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,FishGF.getChByIndex(800000175),nil, nil, nil, 0.5) 
-			end
-			
-			if FishGI.GAME_STATE == 2 then
-				FishGF.waitNetManager(true,nil,"doPaySDK")
-				FishGI.IS_RECHARGE = 5
-				--FishGI.hallScene.net.roommanager:sendDataGetInfo();
-				--local str = ""
-				--if self.info.rechargeType == 1 then str = FishGF.getChByIndex(800000353) else str = FishGF.getChByIndex(800000352) end
-				--FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,FishGF.getChByIndex(800000351)..self.info.name.."\n"..str,nil, nil, nil, 3)
-			elseif FishGI.GAME_STATE == 3 then
-				FishGI.gameScene.net:sendReChargeSucceed()
-				local uiShopLayer = FishGF.getLayerByName("uiShopLayer")
-				if uiShopLayer ~= nil then
-					uiShopLayer:hideLayer(false);
-				end
-				FishGI.WebUserData:initWithUserId(FishGI.WebUserData:GetUserId());
-				if self.info.rechargeType ~= 3 then
-					local str = ""
-					if self.info.rechargeType == 1 then str = FishGF.getChByIndex(800000353) else str = FishGF.getChByIndex(800000352) end
-					FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,FishGF.getChByIndex(800000351)..self.info.name.."\n"..str,nil, nil, nil, 0.5)
-				end
-			end
-			FishGI.eventDispatcher:dispatch("BuySuccessCall", resultInfo);
-		else
-			FishGF.print("------recharge faile----")
-		end
-		--删除面板
-		cc.Director:getInstance():getRunningScene():removeChildByTag(FishCD.TAG.PAY_VIEW_TAG);
-	else
-		printf("PayUnionpay:onCallback_"..tostring(luastr))
-	end 
+	--关闭支付方式面板
+	cc.Director:getInstance():getRunningScene():removeChildByTag(FishCD.TAG.PAY_VIEW_TAG);
 end
 
-function PayBase:onIosCallback_(status, paytype, msg)
+function PayBase:onRechargeSuccess(resultInfo)
+	--游客提示
+	if not FishGI.WebUserData:isActivited() then	--"游客"
+		FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,FishGF.getChByIndex(800000175),nil, nil, nil, 0.5)
+	else
+		--充值数据必须在拉起支付的时候记录下
+		--显示玩家充值完成提示
+		FishGF.delayExcute(0.5, function() FishGF.showSystemTip(FishGF.getChByIndex(800000351)..resultInfo.detail..FishGF.getChByIndex(800000353), nil, 3) end)
+	end
+
+	if FishGI.GAME_STATE == 2 then
+		--在大厅充值
+		FishGF.waitNetManager(true,nil,"doPaySDK")
+		FishGI.IS_RECHARGE = 5
+		FishCD.hallScene:doAutoLogin(2);
+	elseif FishGI.GAME_STATE == 3 then
+		--在游戏里面充值
+		--通知服务器刷新数据
+		FishGI.gameScene.net:sendReChargeSucceed();
+		FishGI.WebUserData:initWithUserId(FishGI.WebUserData:GetUserId());
+		
+	end
+
+	FishGI.eventDispatcher:dispatch("BuySuccessCall", resultInfo);
+
+end
+
+function PayBase:onAndroidPayResult(resultStr)
+	local ok, resultInfo = pcall(function()         
+		return loadstring(resultStr)();
+	end)
+
+	--如果在游戏里面充值要通知服务器充值回来
+	if FishGI.GAME_STATE == 3 then
+		FishGI.gameScene.net:sendBackFromCharge();
+	end
+
+	if ok then
+		if resultInfo.status == 0 then
+			self:onRechargeSuccess(resultInfo);
+		else
+            FishGF.showSystemTip(nil,800000169,1);
+		end
+	else
+		print("android pay return string parser fail");
+	end
+
+	self:closePanel();
+end
+
+function PayBase:onIosPayResult(status, paytype, msg)
 	if paytype == "appstore" and status == 0 then
-		self:verifyIosReceipt_(msg, paytype);
+		self:applePayDataVerify(msg, paytype);
 	else
 		local retTab = {
 			status = status,
 			paytype = paytype,
 			msg = msg,
 		}
-		self:onCallback_(retTab);
+
+		--如果在游戏里面充值要通知服务器充值回来
+		if FishGI.GAME_STATE == 3 then
+			FishGI.gameScene.net:sendBackFromCharge();
+		end
+		if retTab.status == 0 then
+			self:onRechargeSuccess(retTab);
+		else
+			FishGF.showSystemTip(nil,800000169,1);
+		end
 	end
+
+	self:closePanel();
 end
 
-function PayBase:verifyIosReceipt_(luastr, paytype)
-    print("verify:"..luastr)
-    local ok, args = pcall(function()
-        return loadstring(luastr)();
-    end)
-    if ok then
-        print("-----------------ok verify")
+function PayBase:onSdkPayResult(resultInfo)
+	local resultTab = json.decode(resultInfo)
+		
+        if resultTab.resultCode == 0 then
+            --成功
+            self:onRechargeSuccess(resultTab);
+        else
+            FishGF.showSystemTip(nil,800000169,1);
+        end
 
-		FishGF.waitNetManager(true,FishGF.getChByIndex(800000186),"verifyIosReceipt_")
-        FishGI.Dapi:VerifyIosReceipt(args, function(msg)
-            FishGF.waitNetManager(false,FishGF.getChByIndex(800000186),"verifyIosReceipt_")
-            if msg.status == 0 then
-                local ret_tab = { status = msg.status, paytype = paytype, msg = "支付成功！" }
-                --self:onPayCallback("return "..gg.SerialObject(ret_tab))
-                self:onCallback_(ret_tab)
-            else
-                print("iap order verify failure");
-            end
- 
-        end)
-    else
-        printf("解析ios 参数失败 %s", luastr)
-    end
-end
-
-function PayBase:doPayAndroid(args)
-    self:addListener()
-    local javaMethodName = "doPay"
-    args.virtual=checkint( args.virtual) 
-    local jsonArgs = json.encode(args)
-    local cfgTable = PAY_CONFIG[args.type]
-    local jsonCfg = json.encode(cfgTable)
-
-    printf("---------- PayAndroid:doPayReq" .. jsonArgs)
-    printf("---------- doPayReq jsonCfg" .. jsonCfg)
-    local javaParams = {
-        args.type,
-        jsonArgs,
-        jsonCfg
-    }
-	local luaBridge = require("cocos.cocos2d.luaj")
-    local javaMethodSig = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V"
-    luaBridge.callStaticMethod(JAVA_CLASS_NAME, javaMethodName, javaParams, javaMethodSig)
-end
-
-
-
-function PayBase:doPaySDKResult(resultStr)
-	--[[local ok,argtable = pcall(function()         
-        return loadstring(resultStr)();
-    end)]]--
-
-	local resultTab = json.decode(resultStr);
 	if FishGI.GAME_STATE == 3 then
 		FishGI.gameScene.net:sendBackFromCharge()
 	end		
-    if resultTab ~= nil then
-    	local payArgs = checktable(resultTab);
-		if FishGI.GAME_STATE == 2 then
-			FishGI.hallScene.net.roommanager:sendDataGetInfo();
-		elseif FishGI.GAME_STATE == 3 then
-			print("-------------------------ref------")
-			FishGI.gameScene.net:sendReChargeSucceed()
-		end
-		
-    	self.callfunc(payArgs);
-    else
-    	print("sdk返回的数据出错");
-    end
+
+	self:closePanel();
 end
 
 return PayBase;

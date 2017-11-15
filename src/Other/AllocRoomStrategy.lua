@@ -1,6 +1,6 @@
 local AllocRoomStrategy = class("AllocRoomStrategy")
 local oldRoomTab = {527, 606}
-local newRoomTab = {609}
+local newRoomTab = {610}
 
 function AllocRoomStrategy.create()
 	local obj = AllocRoomStrategy.new();

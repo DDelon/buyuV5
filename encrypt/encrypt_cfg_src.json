@@ -1,0 +1,5 @@
+[
+    "Game/GameNet.lua",
+    "Game/Friend/GameFriendNet.lua",
+    "version.lua"
+]

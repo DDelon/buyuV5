@@ -465,18 +465,32 @@ function GameEffect:dropThings(valTab)
 
     local dropCount = 0
     if  dropCrystal ~= nil and dropCrystal > 0 then
-        dropCount = dropCount +1
-        local propTab = {}
-        propTab.playerId = valTab.playerId
-        propTab.propId = FishCD.PROP_TAG_02
-        propTab.propCount = dropCrystal
-        propTab.isRefreshData = true
-        propTab.isJump = true
-        propTab.firstPos = dropPos
-        propTab.dropType = "normal"
-        propTab.isShowCount = true
-        propTab.delayTime = 0.8
-        FishGI.GameEffect:playDropProp(propTab)
+        for i=1,dropCrystal do
+            dropCount = dropCount +1
+            local indexd = 1
+            local propTab = {}
+            propTab.playerId = valTab.playerId
+            propTab.propId = FishCD.PROP_TAG_02
+            if i == 1 then
+                propTab.propCount = dropCrystal
+                propTab.isRefreshData = true
+            else
+                propTab.propCount = 1
+                propTab.isRefreshData = false
+            end
+            propTab.isJump = true
+            propTab.firstPos,indexd = self:getDropPos(FishCD.PROP_TAG_02,dropPos,dropCount,dropCrystal)
+            if dropCrystal > 5 then
+                propTab.maxScale = 0.8
+            else
+                propTab.maxScale = 1.2
+            end
+            
+            propTab.dropType = "normal"
+            propTab.isShowCount = false
+            propTab.delayTime = 0.8 + indexd*0.1
+            FishGI.GameEffect:playDropProp(propTab)            
+        end
     end
 
     --掉落道具
@@ -519,6 +533,38 @@ function GameEffect:dropThings(valTab)
             FishGI.GameEffect:playDropProp(propTab)
         end
     end
+
+end
+
+--得到掉落位置
+function GameEffect:getDropPos(propId,dropPos,count,allCount)
+    local posX = dropPos.x
+    local posY = dropPos.y
+    local pos = {}
+    local index = 1
+    if propId == 2 then
+        local disX = 75
+        local disY = 75
+        if allCount == 1  then
+            pos = dropPos
+        elseif allCount == 10  then
+            if count  < 4 then
+                pos.x = (count - 2)*disX + posX
+                pos.y = disY + posY
+                index = count
+            elseif count  < 8 then
+                pos.x = (count - 3 - 2.5)*disX + posX
+                pos.y = posY
+                index = count- 3
+            elseif count  < 11 then
+                pos.x = (count - 7 - 2)*disX + posX
+                pos.y = - disY + posY
+                index = count- 7
+            end
+        end
+    end
+
+    return pos,index
 
 end
 
@@ -1299,6 +1345,7 @@ function GameEffect:playDropProp(dataTab)
     local isRefreshData = dataTab.isRefreshData
     local isJump = dataTab.isJump
     local firstPos = dataTab.firstPos
+    local maxScale = dataTab.maxScale
 
     local dropType = dataTab.dropType
     local isShowCount = dataTab.isShowCount
@@ -1420,7 +1467,10 @@ function GameEffect:propRunAct(dataTab)
     local isJump = dataTab.isJump
     local seniorPropData = dataTab.seniorPropData
     local delayTime = dataTab.delayTime
-
+    local maxScale = dataTab.maxScale
+    if maxScale == nil then
+        maxScale = 1.2
+    end
     local firstPos = dataTab.firstPos
     node:setPosition(cc.p(firstPos.x,firstPos.y))
 
@@ -1474,7 +1524,7 @@ function GameEffect:propRunAct(dataTab)
         node:setScale(0.3)
         node:setVisible(false)
 
-        node:runAction(cc.Sequence:create(cc.DelayTime:create(delayTime),cc.Show:create(),cc.ScaleTo:create(0.54,1)))
+        node:runAction(cc.Sequence:create(cc.DelayTime:create(delayTime),cc.Show:create(),cc.ScaleTo:create(0.54,maxScale)))
         node:runAction(cc.Sequence:create(cc.DelayTime:create(delayTime),cc.MoveBy:create(0.21,cc.p(0,88))))
         node:runAction(cc.Sequence:create(cc.DelayTime:create(delayTime + 0.21),cc.MoveBy:create(0.20,cc.p(0,-103))))
         node:runAction(cc.Sequence:create(cc.DelayTime:create(delayTime + 0.41),cc.MoveBy:create(0.13,cc.p(0,27))))
@@ -1482,6 +1532,7 @@ function GameEffect:propRunAct(dataTab)
         frontDelayTime = delayTime + 0.41 + 0.13 + 0.6
         
     else --直接出现
+        node:setScale(maxScale)
         if delayTime == nil then
             delayTime = 0.4
         end

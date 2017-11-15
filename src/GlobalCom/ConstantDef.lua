@@ -187,7 +187,7 @@ FishCD.aimPosTab[FishCD.DIRECT.RIGHT_UP]   = cc.p(945.05, 680);
 FishCD.aimPosTab[FishCD.DIRECT.RIGHT_DOWN] = cc.p(945.05, 40);
 
 --转盘速度
-FishCD.DIAL_SPEED  = 680
+FishCD.DIAL_SPEED  = 880
 
 --光环旋转速度
 FishCD.LIGHT_SPEED = 60

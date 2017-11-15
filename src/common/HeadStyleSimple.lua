@@ -1,7 +1,7 @@
 local HeadStyleSimple = class("HeadStyleSimple", cc.load("mvc").ViewBase)
 
 HeadStyleSimple.AUTO_RESOLUTION   = false
-HeadStyleSimple.RESOURCE_FILENAME = "ui/common/uiheadstylesimple.lua"
+HeadStyleSimple.RESOURCE_FILENAME = "ui/common/uiheadstylesimple"
 HeadStyleSimple.RESOURCE_BINDING  = {
     ["panel"]     = { ["varname"] = "panel"  },
     

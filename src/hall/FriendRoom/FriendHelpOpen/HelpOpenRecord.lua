@@ -2,22 +2,21 @@ local HelpOpenRecord = class("HelpOpenRecord", cc.load("mvc").ViewBase)
 local MAX_ROOM_NUM = 4
 
 HelpOpenRecord.AUTO_RESOLUTION   = false
-HelpOpenRecord.RESOURCE_FILENAME = "ui/hall/friend/friendhelpopen/uihelpopenrecord.lua"
+HelpOpenRecord.RESOURCE_FILENAME = "ui/hall/friend/friendhelpopen/uihelpopenrecord"
 HelpOpenRecord.RESOURCE_BINDING  = {
-    ["panel"] = { ["varname"] = "panel" },
-    ["img_bg"]     = { ["varname"] = "img_bg"  },
-    ["line"] = { ["varname"] = "line"  },
-
-    ["text_name_title"]     = { ["varname"] = "text_name_title"  },    
-    ["text_roomid_title"]    = { ["varname"] = "text_roomid_title"} , 
-    ["text_roomid"]     = { ["varname"] = "text_roomid"  },
-    ["text_openroom_time"]     = { ["varname"] = "text_openroom_time"  }, 
-
-
-    ["node_head1"] = { ["varname"] = "node_head1"  },
-    ["node_head2"] = { ["varname"] = "node_head2"  },
-    ["node_head3"] = { ["varname"] = "node_head3"  },
-    ["node_head4"] = { ["varname"] = "node_head4"  },
+    ["panel"]              = { ["varname"] = "panel" },
+    ["img_bg"]             = { ["varname"] = "img_bg"  },
+    ["line"]               = { ["varname"] = "line"  },
+    
+    ["text_name_title"]    = { ["varname"] = "text_name_title"  },    
+    ["text_roomid_title"]  = { ["varname"] = "text_roomid_title"} , 
+    ["text_roomid"]        = { ["varname"] = "text_roomid"  },
+    ["text_openroom_time"] = { ["varname"] = "text_openroom_time"  }, 
+    
+    ["node_head1"]         = { ["varname"] = "node_head1"  },
+    ["node_head2"]         = { ["varname"] = "node_head2"  },
+    ["node_head3"]         = { ["varname"] = "node_head3"  },
+    ["node_head4"]         = { ["varname"] = "node_head4"  },
 }
 
 function HelpOpenRecord:onCreate(...)
@@ -82,7 +81,6 @@ end
 
 function HelpOpenRecord:setRoomMaxPlayerNum(num)
     self.maxPlayerNum = num;
-
     for key = 1, MAX_ROOM_NUM do
         local head = self:getHeadByLocalId(key);
         if key <= self.maxPlayerNum then
@@ -101,12 +99,13 @@ function HelpOpenRecord:getRoomMaxPlayerNum()
     return self.maxPlayerNum;
 end
 
-function HelpOpenRecord:setInfo(info)
-    self.friendGameId = info.friendGameId;
-    local friendRoomNo = info.friendRoomNo;
-    local duration = info.duration;
-    local createTime = info.createTime;
-    local playerCount = info.playerCount
+function HelpOpenRecord:setInfo(roomInfo)
+    self.roomInfo = roomInfo
+    self.friendGameId = roomInfo.friendGameId;
+    local friendRoomNo = roomInfo.friendRoomNo;
+    local duration = roomInfo.duration;
+    local createTime = roomInfo.createTime;
+    local playerCount = roomInfo.playerCount
 
 
     self:setRoomId(friendRoomNo);
@@ -116,7 +115,7 @@ function HelpOpenRecord:setInfo(info)
 end
 
 function HelpOpenRecord:playerJoinRoom(info)
-    local localId = info.chairId;
+    local localId = info.chairId + 1
     local headPath = info.path;
     local playerId = info.playerId;
     local name = info.name;
@@ -127,11 +126,21 @@ function HelpOpenRecord:playerJoinRoom(info)
     end
 
     local head = self:getHeadByLocalId(localId);
+    if head == nil then
+        return nil;
+    end
     head:setPlayerId(playerId);
     head:setName(name);
     head:setHead(headPath);
     head:setScore(score);
     head:switchWithScoreMode();
+end
+
+function HelpOpenRecord:playerExitRoomByChairId(chairId)
+    local head = self:getHeadByLocalId(chairId)
+    if head ~= nil then
+        head:switchNull();
+    end
 end
 
 function HelpOpenRecord:playerExitRoom(playerId)

@@ -7,12 +7,12 @@ function PayApple.create()
 end
 
 function PayApple:init()
-	self.super:init();
+	self.super.init(self);
 end
 
 function PayApple:doPay(payInfo)
 	payInfo["type"] = "appstore";
-	self.super:doPay(payInfo)
+	self.super.doPay(self, payInfo)
 end
 
 function PayApple:doPayAndroid(payInfo)

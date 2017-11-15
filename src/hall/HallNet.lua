@@ -37,33 +37,32 @@ end
 
 --创建LUA游戏客户端
 function HallNet:CreateLuaGameClient(shortname)
-    --local temp4 = Helper;
-    --local GameClientCreator = require("Other/FileTable").New():Open(Helper.writepath.."src/Game/GameScene");
-    --local creator = GameClientCreator[shortname];
-    --if creator == nil then return end;
-	--测试文件是否存在
-    local fullPath = "src/Game/GameNet.lua";
-    local hotUpdatePath = cc.FileUtils:getInstance():getWritablePath().."src/Game/GameNet.lua"
-    if cc.FileUtils:getInstance():isFileExist(hotUpdatePath) then
-        fullPath = hotUpdatePath;
-    end
-    
-    if FishGI.FRIEND_ROOM_STATUS ~= 0 then
-        print("---------------------创建朋友场LUA游戏客户端--------------")
-        hotUpdatePath = cc.FileUtils:getInstance():getWritablePath().."src/Game/Friend/GameFriendNet.lua"
-        if cc.FileUtils:getInstance():isFileExist(hotUpdatePath) then
-            print("writable path exist "..hotUpdatePath)
-            fullPath = hotUpdatePath;
-        else
-            fullPath = "src/Game/Friend/GameFriendNet.lua";
+    local function getGameNetFilePath(srcPath)
+        --计算后缀名的位置
+        local reverseStr = string.reverse(srcPath);
+        local a, b = string.find(reverseStr, "%.");
+        local pos = string.len(reverseStr)-b;
+        local srcFilePath = srcPath;
+        local encryFilePath = string.sub(srcFilePath, 1, pos)..".wld";
+        local writableSrcFilePath = cc.FileUtils:getInstance():getWritablePath()..srcFilePath;
+        local writableEncryFilePath = cc.FileUtils:getInstance():getWritablePath()..encryFilePath;
+
+        if cc.FileUtils:getInstance():isFileExist(writableEncryFilePath) then
+            return writableEncryFilePath;
+        elseif cc.FileUtils:getInstance():isFileExist(writableSrcFilePath) then
+            return writableSrcFilePath;
+        elseif cc.FileUtils:getInstance():isFileExist(encryFilePath) then
+            return encryFilePath;
+        elseif cc.FileUtils:getInstance():isFileExist(srcFilePath) then
+            return srcFilePath;
         end
-        
     end
-    
-	if not cc.FileUtils:getInstance():isFileExist(fullPath) then
-		printf("\""..fullPath.."\"文件不存在！");
-		return ;
-	end
+
+    local fullPath = getGameNetFilePath("src/Game/GameNet.lua");
+    if FishGI.FRIEND_ROOM_STATUS ~= 0 then
+        fullPath = getGameNetFilePath("src/Game/Friend/GameFriendNet.lua");
+    end
+
 	local gameclient= CLuaGameClient.New();
 	if gameclient then
 
@@ -73,7 +72,6 @@ function HallNet:CreateLuaGameClient(shortname)
 	end
     
 	return gameclient;
-
 end
 
 function HallNet:joinRoom(roomid,bReconnect)
@@ -110,6 +108,10 @@ end
 
 function HallNet:getSession()
     return self.session;
+end
+
+function HallNet:getUserId()
+    return self.userinfo.id
 end
 
 function HallNet:selectRoom(rooms)
@@ -499,6 +501,18 @@ end
 ]]
 function evt.OnMsgLogout(hall,reason)
     FishGF.print("hall OnMsgLogout");
+end
+
+function evt.OnMsgCommand(hall, msg)
+    local cmdTab = FishGF.ParsingCmd(msg);
+    if cmdTab.type == "pay_result" then
+        FishGF.showSystemTip(nil,800000157,2);
+
+        if FishGI.GAME_STATE == 3 then
+            FishGI.gameScene.net:sendReChargeSucceed()
+            FishGI.WebUserData:initWithUserId(FishGI.WebUserData:GetUserId());
+        end
+    end
 end
 
 return HallNet;

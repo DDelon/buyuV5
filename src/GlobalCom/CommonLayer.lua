@@ -26,6 +26,7 @@ function CommonLayer:initComLayer()
         self.uiShopLayer = require("Shop/Shop").create()
         self.uiShopLayer:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
         self.uiShopLayer:retain()
+        self.uiShopLayer:hideLayer(false)
     end
 
     --VIP特权
@@ -33,6 +34,7 @@ function CommonLayer:initComLayer()
         self.uiVipRight = require("VipRight/VipRight").create()
         self.uiVipRight:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
         self.uiVipRight:retain()
+        self.uiVipRight:hideLayer(false)
     end
 
     --月卡
@@ -40,13 +42,21 @@ function CommonLayer:initComLayer()
         self.uiMonthcard = require("hall/Monthcard/Monthcard").create()
         self.uiMonthcard:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,330*self.scaleY_))
         self.uiMonthcard:retain()
+        self.uiMonthcard:hideLayer(false)
     end
 
-
     self:initNotice()
+
     for k,v in pairs(self.layerList) do
-        self[v.layerName]:setScale(self.scaleMin_)
-        self[v.layerName]:hideLayer(false)
+        if self[v.layerName] ~= nil then
+            self[v.layerName]:setScale(self.scaleMin_)
+        end
+    end 
+
+    for k,v in pairs(self.layerList) do
+        if self[v.layerName] ~= nil and v.isAutoHide == 1 then
+            self[v.layerName]:hideLayer(false)
+        end
     end 
 
 end
@@ -84,6 +94,13 @@ function CommonLayer:getComLayer(layerName)
     return self[layerName]
 end
 
+function CommonLayer:hideComLayer(layerName)
+    local layer = self:getComLayer(layerName)
+    if layer ~= nil then
+        layer:hideLayer(false)
+    end
+end
+
 function CommonLayer:getAllComLayer()
     local result = {}
     for k,v in pairs(self.layerList) do
@@ -103,7 +120,14 @@ function CommonLayer:addOneLayerToParent(layerName,parent,parent2,order,isAdd,is
     if self[layerName] == nil then
         return
     end
-    if self[layerName]:getParent() ~= nil then
+    local layerParent = self[layerName]:getParent()
+    if layerParent == parent or layerParent == parent2 then
+        if (not isShow) or isAutoHide == 1 then
+            self[layerName]:hideLayer(false)
+        end
+        return
+    end
+    if  layerParent ~= nil then
         self[layerName]:removeFromParent()
     end        
     parent[layerName] = self[layerName]
@@ -112,8 +136,10 @@ function CommonLayer:addOneLayerToParent(layerName,parent,parent2,order,isAdd,is
     end
     if isAddToScene == 0 then
         parent:addChild(self[layerName],order)
+        self[layerName]:hideLayer(false)
     else
         parent2:addChild(self[layerName],order)
+        self[layerName]:hideLayer(false)
     end
     
     if (not isShow) or isAutoHide == 1 then

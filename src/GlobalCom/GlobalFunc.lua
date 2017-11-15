@@ -586,10 +586,10 @@ function FishGF.createCloseSocketNotice(str,index)
     if index ~= nil then
         FishGF.print("--------------createCloseSocketNotice-------index="..index)
     end
-    local curScene = cc.Director:getInstance():getRunningScene();
-    local sceneName = curScene.sceneName
     local function callback(sender)
         local tag = sender:getTag()
+        local curScene = cc.Director:getInstance():getRunningScene();
+        local sceneName = curScene.sceneName
         if tag == 0 then
             if sceneName == "login" then
                 if FishGI.hallScene~= nil and FishGI.hallScene.net ~= nil and FishGI.hallScene.net.CloseSocket ~= nil then
@@ -771,14 +771,19 @@ function FishGF.getFormatTimeBySeconds(seconds)
 end
 
 --延时执行
-function FishGF.delayExcute(time, func, data)
+function FishGF.delayExcute(time, func, data, isLoop, tag)
     local function tempFunc()
         func(data);
     end
     local scene = cc.Director:getInstance():getRunningScene();
     local seq = cc.Sequence:create(cc.DelayTime:create(time), cc.CallFunc:create(tempFunc));
-
-    scene:runAction(seq);
+    if isLoop then
+        local rep = cc.RepeatForever:create(seq);
+        rep:setTag(tag);
+        scene:runAction(rep);
+    else
+        scene:runAction(seq);
+    end
 end
 
 --判断手机号是否符合
@@ -1571,7 +1576,10 @@ function FishGF.checkUpdate(shortName)
 	local isExistLocalPath = cc.FileUtils:getInstance():isFileExist(info.FILE_NAME.."version.lua")
     local version = info.VER
     if (isExist or isExistLocalPath) then version = require(info.FILE_NAME.."version.lua") end
-    local hotScene = require("Update/UpDateScene").create(info.APP_ID..info.APP_KEY..info.APP_ID, info.APP_ID, info.CHANNEL_ID, version)
+    local app_id = info["APP_ID_"..device.platform];
+    local urlkey = app_id..info.APP_KEY..app_id;
+
+    local hotScene = require("Update/UpDateScene").create(urlkey, app_id, CHANNEL_ID, version)
     cc.Director:getInstance():pushScene(hotScene)
 end
 
@@ -1658,9 +1666,64 @@ function FishGF.getTimeByString(timeStr)
     return os.time({year=year, month=month, day=day, hour=hour,min=minute,sec=second})
 end
 
-function FishGF.decode(str)
+function FishGF.SplitString(str, split_char)
+    local sub_str_tab = {};
+    while (true) do
+        local pos = string.find(str, split_char);
+        if (not pos) then
+            sub_str_tab[#sub_str_tab + 1] = str;
+            break;
+        end
+        local sub_str = string.sub(str, 1, pos - 1);
+        sub_str_tab[#sub_str_tab + 1] = sub_str;
+        str = string.sub(str, pos + 1, #str);
+    end
 
+    return sub_str_tab;
 end
 
-function FishGF.encode()
+function FishGF.ParsingCmd(cmdstr)
+    cmdstr=cmdstr or ""
+    local params= FishGF.SplitString(cmdstr,"&")
+    local args_tab={}
+    for _,v in pairs(params) do
+        local arg =FishGF.SplitString(v,"=")
+        if #arg==2 then
+            args_tab[arg[1]]=arg[2]
+        end
+    end
+    return args_tab
+end
+
+--使用延迟函数 注意 计时器释放问题
+function FishGF.InvokeFuncNextFrame(func ,...)
+    if func then
+        return require("common.Timer").new():runOnce(function (dt,data,tid) func(unpack(data)) end,0,...)
+    end
+end
+
+function FishGF.doChatSdk()
+    if device.platform == "android" then
+    elseif device.platform == "ios" then
+        local info = {}
+        info.app_id = APP_ID
+        info.channel_id = CHANNEL_ID
+        info.user_id = tostring(FishGI.hallScene.net:getUserId())
+        info.region = 0
+        info.device_code = Helper.GetDeviceCode()
+        info.client_version = ""
+        info.ui = "tag_login"
+        info.room_id = FishGI.hallScene.net.roomId
+        info.game_id = GAME_ID
+        info.url_vc = "http://p3kcsai8.weile.com,p3kcsai8.weile.com ,"
+        info.url_login = "192.168.1.200"
+        info.domain = "weile.com "
+        local iosClassName = "AppController"
+        local methodName = "doChat"
+        local luaoc = require("cocos.cocos2d.luaoc")
+        local ok, ret = luaoc.callStaticMethod(iosClassName, methodName, info)
+        if not ok then
+            print("call oc class:"..iosClassName.." method:"..methodName.." failure")
+        end
+    end
 end

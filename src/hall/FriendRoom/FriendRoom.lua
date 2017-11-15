@@ -9,8 +9,8 @@ FriendRoom.RESOURCE_BINDING  = {
     
     ["panel_create"]    = { ["varname"] = "panel_create"} , 
     ["panel_enter"]     = { ["varname"] = "panel_enter"  },    
-    ["panel_helpopen"]     = { ["varname"] = "panel_helpopen"  },
-
+    ["panel_helpopen"]  = { ["varname"] = "panel_helpopen"  },
+    
     ["btn_back"]        = { ["varname"] = "btn_back" ,         ["events"]={["event"]="click",["method"]="onClickback"}}, 
     
     ["btn_rule"]        = { ["varname"] = "btn_rule" ,         ["events"]={["event"]="click_color",["method"]="onClickrule"}}, 
@@ -43,6 +43,9 @@ function FriendRoom:onCreate( ... )
     FishGI.FRIEND_ROOMNO = nil
     self:setIsCurShow(false)
     self:openTouchEventListener(false)
+
+    self.node_fr_btn:setScale(self.scaleMin_)
+    self.btn_back:setScale(self.scaleMin_)
 
     local node_fish_create = self.panel_create:getChildByName("node_fish")
     node_fish_create.animation:play("roomact", true);
@@ -138,6 +141,7 @@ function FriendRoom:onTouchEnded(touch, event)
     local rect3 = cc.rect(0,0,s3.width,s3.height)
     if cc.rectContainsPoint(rect3,locationInNode3) then
         print("-----panel_helpopen-------")
+        --FishGI.hallScene.uiHelpOpenLayer:showLayer()
         FishGI.hallScene.uiHelpOpenLayer:sendNetData("running") 
         FishGI.hallScene.uiHelpOpenLayer:sendNetData("StartMonitor")
     end
@@ -160,28 +164,28 @@ function FriendRoom:setChooseType( curType,needCount)
             return 
         end        
         
-        local playerKey = "FriendCost"..FishGI.myData.playerId
-        local isFriendNoticeCost = cc.UserDefault:getInstance():getBoolForKey(playerKey)
-        if not isFriendNoticeCost then
-            local function callback(sender)
-                local tag = sender:getTag()
-                if tag == 2 then
-                    self.curType = curType
-                    self.friendRoomNo = nil
-                    self.friendGameId = nil
-                    FishGI.FriendRoomManage:sendGetFriendStatus();
-                    cc.UserDefault:getInstance():setBoolForKey(playerKey,isFriendNoticeCost)
-                    cc.UserDefault:getInstance():flush()
-                elseif tag == 4 then
-                    isFriendNoticeCost = not isFriendNoticeCost
-                    sender:getChildByName("spr_hook"):setVisible(isFriendNoticeCost)
-                end
-            end
-            local str = FishGF.getChByIndex(800000306)
-            local strHook = FishGF.getChByIndex(800000307)
-            FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE_HOOK,str,callback,nil,strHook)
-            return
-        end
+        -- local playerKey = "FriendCost"..FishGI.myData.playerId
+        -- local isFriendNoticeCost = cc.UserDefault:getInstance():getBoolForKey(playerKey)
+        -- if not isFriendNoticeCost then
+        --     local function callback(sender)
+        --         local tag = sender:getTag()
+        --         if tag == 2 then
+        --             self.curType = curType
+        --             self.friendRoomNo = nil
+        --             self.friendGameId = nil
+        --             FishGI.FriendRoomManage:sendGetFriendStatus();
+        --             cc.UserDefault:getInstance():setBoolForKey(playerKey,isFriendNoticeCost)
+        --             cc.UserDefault:getInstance():flush()
+        --         elseif tag == 4 then
+        --             isFriendNoticeCost = not isFriendNoticeCost
+        --             sender:getChildByName("spr_hook"):setVisible(isFriendNoticeCost)
+        --         end
+        --     end
+        --     local str = FishGF.getChByIndex(800000306)
+        --     local strHook = FishGF.getChByIndex(800000307)
+        --     FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE_HOOK,str,callback,nil,strHook)
+        --     return
+        -- end
 
     elseif curType == 2 then
 
@@ -236,7 +240,7 @@ function FriendRoom:setIsCurShow( isShow )
 
     for k,v in pairs(self.LEFT_BTN) do
         local node = self[v.varname]
-        FishGF.setNodeIsShow(node,"left",isShow)
+        FishGF.setNodeIsShow(node,"down",isShow)
     end
     FishGF.setNodeIsShow(self.btn_back,"up",isShow)
     FishGF.setNodeIsShow(self.node_friendroom,"up",isShow ,display.height)
@@ -424,7 +428,7 @@ function FriendRoom:OnFriendServerReady(data)
    if FishGI.FRIEND_ROOM_STATUS == 1 and not FishGI.hallScene.uiCreateSuceed:isVisible() then
         --申请创建房间
         local createData = FishGI.hallScene.uiCreateLayer.createData
-        FishGI.FriendRoomManage:sendCreateFriendRoom(createData.roomPropType,createData.roomPeopleCountType,createData.roomDurationType)
+        FishGI.FriendRoomManage:sendCreateFriendRoom(createData.roomPropType,createData.roomPeopleCountType,createData.roomDurationType,createData.agent,createData.roomCardType)
    elseif FishGI.FRIEND_ROOM_STATUS == 2 then
         --直接加入房间
         self:sendJoinFriendRoom()
@@ -485,6 +489,7 @@ function FriendRoom:OnCreateFriendRoom(netData)
         FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,FishGF.getChByIndex(800000285),callback, nil)
     elseif errorCode == 6 then             --使用平台房卡创建房间失败的错误原因
         FishGF.showToast(netData.webMsg)
+        FishGF.backToHall( )
     end
 end
 

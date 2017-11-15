@@ -7,12 +7,12 @@ function PayUnionpay.create()
 end
 
 function PayUnionpay:init()
-	self.super:init();
+	self.super.init(self);
 end
 
 function PayUnionpay:doPay(payInfo)
 	payInfo["type"] = "unionpay_client";
-	self.super:doPay(payInfo)
+	self.super.doPay(self, payInfo)
 end
 
 return PayUnionpay;

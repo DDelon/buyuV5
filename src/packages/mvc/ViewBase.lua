@@ -70,7 +70,9 @@ function ViewBase:onEnter( )
 end
 
 function ViewBase:onExit( )
-    FishGI.eventDispatcher:removeListenerByView(self)
+    if FishGI ~= nil and FishGI.eventDispatcher ~= nil then
+        FishGI.eventDispatcher:removeListenerByView(self)
+    end
 end
 
 local function dispatchRemoveEvent_(listeners)
@@ -353,8 +355,12 @@ function ViewBase:initWinEditBox(box,isPassword,isMediate)
     self[box].getString = function(self)
         return self:getText()
     end
+    --没有初始化str的要调用这个
+    self[box].setNewPlaceHolder = function(self,str)
+        self:setPlaceHolder(str)
+    end
 
-    isMediate = true
+    isMediate = isMediate or true
     --输入完之后是否居中
     if isMediate then
         self[box]:setPlaceholderFontColor(cc.c4b(255,255,255,0))

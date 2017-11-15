@@ -9,10 +9,12 @@ HallLayer.RESOURCE_BINDING  = {
     ["node_bg"]            = { ["varname"] = "node_bg"  },
     
     ["node_msw"]           = { ["varname"] = "node_msw"} , 
+    ["node_enter_friend"]  = { ["varname"] = "node_enter_friend"} ,
     ["node_righttop_btn"]  = { ["varname"] = "node_righttop_btn"} ,    
     ["image_option_bg"]    = { ["varname"] = "image_option_bg"  },    
     ["btn_option"]         = { ["varname"] = "btn_option" ,         ["events"]={["event"]="click",["method"]="onClickoption"}}, 
     ["btn_option_exit"]    = { ["varname"] = "btn_option_exit" ,    ["events"]={["event"]="click",["method"]="onClickexit"}}, 
+    ["btn_option_feedback"]= { ["varname"] = "btn_option_feedback" , ["events"]={["event"]="click",["method"]="onClickfeedback"}}, 
     ["btn_option_service"] = { ["varname"] = "btn_option_service" , ["events"]={["event"]="click",["method"]="onClickservice"}}, 
     ["btn_mail"]           = { ["varname"] = "btn_mail" ,           ["events"]={["event"]="click",["method"]="onClickmail"}}, 
     ["btn_real_name"]      = { ["varname"] = "btn_real_name" ,      ["events"]={["event"]="click",["method"]="onClickreal_name"}},   
@@ -49,7 +51,6 @@ HallLayer.RESOURCE_BINDING  = {
 --vip特权  = node_btn_8
 --月卡     = node_btn_9
 --商店     = node_btn_10
---朋友场   = node_btn_11
 --赛狗     = node_btn_3
 
 --按键 --用于更换按键图片和绑定函数
@@ -64,7 +65,7 @@ HallLayer.HALL_BTN_ARR   = {
     ["node_btn_9"]  = { ["varname"] = "node_btn_9" ,    ["filename"] = "hall_btn_yklb" ,    ["events"]={["event"]="click",["method"]="onClickYklb"}}, 
     ["node_btn_10"] = { ["varname"] = "node_btn_10" ,   ["filename"]= "hall_btn_shop" ,     ["events"]={["event"]="click",["method"]="onClickshop"}}, 
     ["node_btn_2"]  = { ["varname"] = "node_btn_2" ,    ["filename"]= "hall_btn_rcrw" ,     ["events"]={["event"]="click",["method"]="onClicktask"}}, 
-    ["node_btn_11"] = { ["varname"] = "node_btn_11" ,   ["filename"]= "hall_btn_pyc" ,      ["events"]={["event"]="click",["method"]="onClickfriend"}}, 
+    --["node_btn_11"] = { ["varname"] = "node_btn_11" ,   ["filename"]= "hall_btn_pyc" ,      ["events"]={["event"]="click",["method"]="onClickfriend"}}, 
 }
 
 --根据key值排序，更新底部按键位置 
@@ -74,8 +75,8 @@ HallLayer.HALL_DOWN_BTN  = {
     [3]  = { ["varname"] = "node_btn_5"},
     [4]  = { ["varname"] = "node_btn_2"}, 
     [5]  = { ["varname"] = "node_btn_7"},   
-    [6]  = { ["varname"] = "node_btn_11"},  
-    [7]  = { ["varname"] = "node_btn_3"},
+--    [6]  = { ["varname"] = "node_btn_11"},  
+    [6]  = { ["varname"] = "node_btn_3"},
 }
 
 --左边的按键
@@ -146,6 +147,11 @@ function HallLayer:initBtnArr()
     self.btn_msw:onClickScaleEffect(handler(self,self.onClickmsw))
     self.node_msw.animation:play("msw_light", true);
     self.node_msw:setScale(self.scaleMin_)
+
+    self.btn_enter_friend = self.node_enter_friend:getChildByName("btn_enter_friend")
+    self.btn_enter_friend:onClickScaleEffect(handler(self,self.onClickfriend))
+    self.node_enter_friend.animation:play("light", true);
+    self.node_enter_friend:setScale(self.scaleMin_)
 
     local btnCount = 0
     --绑定按键和更换按键图片
@@ -347,17 +353,21 @@ function HallLayer:onClickoption( sender )
     self:setOptionIsOpen(self.isOpen)
 end
 
+function HallLayer:onClickfeedback( sender )
+    FishGI.hallScene.uiFeedback:showLayer() 
+end
+
 --客服
 function HallLayer:onClickservice( sender )
     print("-onClickservice-----")
+    FishGF.doChatSdk()
+    --[[
     local function callback(data)
         local url = data.url;
         cc.Application:getInstance():openURL(url);
     end
     FishGI.Dapi:feedBackUrl(callback)
-
-
-
+    ]]
 end
 
 function HallLayer:onClickcoin( sender )
@@ -436,6 +446,7 @@ function HallLayer:setIsCurShow( isShow )
 
     FishGF.setNodeIsShow(self.node_righttop_btn,"right",isShow)
     FishGF.setNodeIsShow(self.node_msw,"down",isShow)
+    FishGF.setNodeIsShow(self.node_enter_friend,"down",isShow)
 
     for k,v in pairs(self.HALL_DOWN_BTN) do
         local name = v.varname

@@ -608,22 +608,23 @@ end
 * @parm img 上传图片链接地址使用||连接两个URL地址
 * @parm callback 请求回调
 ]]
-function Dapi:FeedBack(udid, gameId, roomId, content, img, callback)
+function Dapi:FeedBack(udid, gameId, roomId, content, img, phone, callback)
 
     local url = getUserApi_("/feedback/add")
-    local data = { udid = udid, game_id = gameId or 0, room_id = roomId or 0, content = content or "", img = img or "" }
+    local data = { udid = udid, game_id = gameId or 0, room_id = roomId or 0, content = content or "", img = img or "", phone = phone or "" }
     table.merge(data, getToken_())
     Http:Post(url, errorhandler_(callback), data, true)
 end
 
---[[
-* @brief 图片云存储
-* @parm fullpath 图片路径
-]]
-function Dapi:Cloudimg(fullpath, callback)
-
-    local url = getUserApi_("/upload/cloudimg")
-    Http:UploadFile(url, errorhandler_(callback), fullpath, getToken_())
+--上传图片  此接口不使用http 代理
+-- POST
+-- 所需的额外参数不加密
+-- 不加密-- 图片数据流
+function Dapi:UploadCloudimg(fullpath, callback)
+    local url = "://cloudimg."..WEB_DOMAIN.."/upload/"..APP_ID.."/"..CHANNEL_ID.."/"..FishGF.getHallVerison().."/"..REGION_CODE
+    local data = {}
+    table.merge(data, getToken_())
+    Http:UploadFile(url, errorhandler_(callback), fullpath, data)
 end
 
 --客服地址
@@ -635,7 +636,7 @@ function Dapi:GeServicetUrl(code)
         userid = checkint(hallmanager.userinfo.id)
     end
     local region = 0
-    local codeparam = string.format("id=%d&version=%s&region=%d&ui=%s", userid, gg.GetHallVerison(), region, code)
+    local codeparam = string.format("id=%d&version=%s&region=%d&ui=%s", userid, FishGF.GetHallVerison(), region, code)
     print("codeparam = "..codeparam)
     local cryptdata = Helper.CryptStr(codeparam, URLKEY)
     local newcryptdata = Helper.StringReplace(Helper.StringReplace(cryptdata, "/", "-"), "+", ",")

@@ -1,6 +1,12 @@
 local GameConf = class("GtspGameConf", nil)
 
 GameConf.LOGIN_CONFIG = {
+    weile = {
+        typeName = "weile",
+    },
+    tencent = {
+        typeName = "tencent",
+    },
     baidu = {
         typeName = "baidu",
     },
@@ -100,6 +106,10 @@ GameConf.PAY_CONFIG = {
         typeName = "wechat",
         payData = {},
     },
+    wechat_h5 = {
+        typeName = "d2VjaGF0SDU=",
+        payData = {},
+    },
     alipay = {
         typeName = "alipay_client",
         payData = {
@@ -107,6 +117,10 @@ GameConf.PAY_CONFIG = {
             email=" ",
             rsa_private="MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBANY3GTv3SaqX/zNMhf4at61rJg1Cm9GpdHujJ3N5LnEtjXL6BwtGUlPe1A+XOSXoqZB1BeOi+aiE6yHfNs643nIPCLsSAmKZSulrssCDjnPOG/MuL8lcOT8c+rbezeWYmS2sm6ynE2lXxNHEA5u1bP+okR/zEdJIB01YgZUFnTJ1AgMBAAECgYEAqhRBIs1qXdoks1Q0ptYLs9L4+VpDYSoL5AZcUmCKsS2buwgtA5Sn1RN8h4xnwWODDcD8FgrV8ijmj5QsbeF2KuCElg+p4g4Moo1A/xznXfDm0ATY+8IzChuQkBtGoBNW1E5PWD0+BkaEf0+FhJDKVzGRAE+JLEyFbTDS9uZ0XwECQQD51oV+utG3cfNqBnedcrO4z6hROUs0tn+y+PuKPZUlVCH09YEkGyDX1Z9fBIRaUCFNiApl/VDIEChpNkbskqphAkEA23+npV2ABGu/ODJ1Fuu/fdJYIPXSGdvu9OalBkP2EpcKulFAH3gklQRfbkp5EBSX7GCFQkBm021hOLKdGA0IlQJBAND1ycXLP2itWCfPrO/1ZbgnhuIYh3xZP8lTUh+3ji0ghx440ICAaCHdvGRehMx8xL3yELBpBM2wJfyJtxxbN0ECQDssmwGVx2Fpus9nqvFW9PTytBeOremSxUT4uRyLTdeNKLM6HFNfjF0wJJoTMbgIFT0AeGx3+ECfiEpEvN0zBlECQGZ9JA9y91mKJS8ZlJrDc2HTB/wphQf5w5Mp+JuKmAWCk5I+k0TYm/8eAD9zTCTDTfrFG/kn0E3L87sEJ3KKGEY="
         },
+    },
+    alipay_h5 = {
+        typeName = "YWxpcGF5SDU=",
+        payData = {},
     },
     unionpay = {
         typeName = "unionpay_client",
@@ -194,8 +208,16 @@ function GameConf.create( ... )
 end
 
 function GameConf:init()
-    -- 充值类型：wechat alipay unipay apple baidu huawei jinli lenovo mi oppo qihu vivo yyb
-    self.pay_type = "wechat"
+    self.app_id = APP_ID
+    self.pay_app_id = APP_ID
+    self.channel_id = CHANNEL_ID
+    self.udid = ""
+    self.userid = ""
+    self.username = ""
+    -- 登录渠道类型:GameConf.LOGIN_CONFIG
+    self.login_type = GameConf.LOGIN_CONFIG.weile
+    -- 充值类型：GameConf.PAY_CONFIG
+    self.pay_type = GameConf.PAY_CONFIG.wechat
     -- 是否是第三方充值渠道
     self.is_thirdpay_sdk = false
     -- 分享类型：wechat
@@ -203,10 +225,15 @@ function GameConf:init()
     -- 扩展数据
     self.extend_data = {
         res_path = "SmallGames/gtsp",
+        pay_type_list = {
+            android = {wechat, alipay, unionpay},
+            ios = {wechat_h5, alipay_h5, unionpay, apple}
+        },
         money_prop_res = "prop_001.png",
         recharge_product_config = GameConf.PRODUCT_CONFIG,
         recharge_unit = "鱼币",
         recharge_point_of_money = 1,
+        pay_switch = PAY_SWITCH,
     }
 end
 
@@ -225,7 +252,9 @@ function GameConf:getPayData()
             },
         },
         wechat = {},
+        wechat_h5 = {},
         apliay = {},
+        apliay_h5 = {},
         unionpay = {},
         apple = {},
         gcsdk = {
@@ -284,11 +313,11 @@ function GameConf:makeOrderData( payData )
     orderData.roomid = 0
     orderData.count = 1
     orderData.debug = 0
-    orderData.udid = Helper.GetDeviceCode()
+    orderData.udid = self.uuid
     if self.pay_type == "apple" then
         orderData.productType = orderData.type
         local cfgTable = checktable(payConfig.payData)
-        orderData.goods = cfgTable[payInfo.price]
+        orderData.goods = cfgTable[orderData.price]
     end
     return orderData
 end
@@ -356,6 +385,29 @@ function GameConf:makeIosPayParams( payInfo, extendData )
     return payInfo
 end
 
+function GameConf:makeAndroidH5PayParams( payInfo, extendData )
+end
+
+function GameConf:makeIosH5PayParams( payInfo, extendData )
+    local info = {}
+	info.listener = extendData.handlerCallback
+	info.money = payInfo.money/100
+	info.devicecode = self.uuid
+	info.app_id = tonumber(self.pay_app_id)
+	info.channel_id = self.channel_id
+	info.userid = tostring(self.userid)
+	info.type = self:getPayTypeName()
+	info.autobuy = 0
+	info.domain = "pay.jiaxianghudong.com"
+	info.region = 0
+	info.version = 0
+	info.goods = tostring(payInfo.id)
+	info.debug = false
+	info.ingame = 0
+	info.roomid = 0
+	return info
+end
+
 function GameConf:makeAndroidPayResultData( data )
     local resultInfo = nil
     local statusCode = 0
@@ -412,6 +464,14 @@ function GameConf:makeIosPayResultData( status, paytype, msg )
 		}
         self:makeAndroidPayResultData(retTab)
 	end
+end
+
+function GameConf:makeAndroidH5PayResultData( data )
+    return GameConf.PAY_RESULT_STATUS.SUCCESS
+end
+
+function GameConf:makeIosH5PayResultData( data )
+    return GameConf.PAY_RESULT_STATUS.SUCCESS
 end
 
 function GameConf:getShareData()
@@ -540,8 +600,8 @@ function GameConf:onThirdpayHuawei(payArgs, extendData)
     payInfo.callbackurl = self:getThirdpayCallBackUrl(extendData.thirdpayCallbackUrl)
     payInfo.productname = payArgs.subject
     payInfo.productid   = payArgs.goods
-    payInfo.username    = SmallGamesGI.hallNet.userinfo.nick
-    payInfo.userid      = SmallGamesGI.hallNet.userinfo.id
+    payInfo.username    = self.username
+    payInfo.userid      = self.userid
 	return payInfo
 end
 
@@ -553,8 +613,8 @@ function GameConf:onThirdpayJinli(payArgs, extendData)
     payInfo.callbackurl = self:getThirdpayCallBackUrl(extendData.thirdpayCallbackUrl)
     payInfo.productname = payArgs.subject
     payInfo.productid   = payArgs.goods
-    payInfo.username    = SmallGamesGI.hallNet.userinfo.nick
-    payInfo.userid      = SmallGamesGI.hallNet.userinfo.id
+    payInfo.username    = self.username
+    payInfo.userid      = self.userid
 	return payInfo
 end
 
@@ -619,8 +679,8 @@ function GameConf:onThirdpayQihu(payArgs, extendData)
     payInfo.callbackurl = self:getThirdpayCallBackUrl(extendData.thirdpayCallbackUrl)
     payInfo.productname = payArgs.subject
     payInfo.productid   = payArgs.goods
-	payInfo.username    = SmallGamesGI.hallNet.userinfo.nick
-    payInfo.userid      = SmallGamesGI.hallNet.userinfo.id
+	payInfo.username    = self.username
+    payInfo.userid      = self.userid
 	return payInfo
 end
 
@@ -642,7 +702,7 @@ function GameConf:onThirdpaySamsung(payArgs, extendData)
     tWaresidList["830000014"] = 14
     tWaresidList["830000015"] = 15
     local payInfo = {}
-    payInfo.userid  = SmallGamesGI.hallNet.userinfo.id
+    payInfo.userid  = SmallGamesGI.hallManager.userinfo.id
     payInfo.order   = payArgs.orderid
     payInfo.waresid = tWaresidList[tostring(payArgs.goods)]
     payInfo.price   = payArgs.money

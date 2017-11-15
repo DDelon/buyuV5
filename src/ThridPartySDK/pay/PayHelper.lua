@@ -7,6 +7,7 @@ function PayHelper.create()
 end
 
 function PayHelper:init()
+	self.method = nil;
 end
 
 
@@ -19,35 +20,34 @@ function PayHelper:doPay(payInfo)
             local cfgTable = checktable(PAY_CONFIG["appstore"][payInfo.type])
             payInfo.goods = cfgTable[payInfo.price]
 			print("goods "..payInfo.goods);
-			self:createPay("appstore"):doPay(payInfo);
+			self.method = self:createPay("appstore");
+			self.method:doPay(payInfo);
 		else
 			self:createWeileView(payInfo);
 		end
 	else
 		payInfo["type"] = FishGF.getThirdPayTypeName()
-		self:createPay("sdk"):doPay(payInfo);
+		self.method = self:createPay("sdk");
+		self.method:doPay(payInfo);
 	end
 end
 
 function PayHelper:createPay(method)
 	if FishGI.GAME_STATE == 3 then
-		print("-------onClickPayButton---sendGotoCharge-----")
 		FishGI.gameScene.net:sendGotoCharge()
 	end
-
 	if method == "yyb" then
 		return require("ThridPartySDK/pay/module/PaySdk").create();
 	elseif method == "appstore" then
 		return require("ThridPartySDK/pay/module/PayApple").create();
-	elseif method == "wechat" then
-		return require("ThridPartySDK/pay/module/PayWechat").create();
-	elseif method == "alipay_client" then
-		return require("ThridPartySDK/pay/module/PayAlipay").create();
 	elseif method == "unionpay_client" then
 		return require("ThridPartySDK/pay/module/PayUnionpay").create();
 	elseif method == "sdk" then
-		print("--------------pay Sdk");
 		return require("ThridPartySDK/pay/module/PaySdk").create();
+	elseif method == "wechatH5" then
+		return require("ThridPartySDK/pay/module/PayWeile").create();
+	elseif method == "alipayH5" then	
+		return require("ThridPartySDK/pay/module/PayWeile").create();
 	end
 end
 
@@ -58,14 +58,16 @@ function PayHelper:createWeileView(paydata)
 	local function selectedPayMethod(method)
 		--玩家点击面板选择了支付方式
 		if method then
-            print("PayHelper:createWeileView selectedPayMethod args : " .. json.encode(payInfo))
+            print("PayHelper:createWeileView selectedPayMethod args : "..json.encode(payInfo))
             print("method:"..method);
             if method == "appstore" then
                 payInfo.productType = payInfo.type
                 local cfgTable = checktable(PAY_CONFIG["appstore"][payInfo.type])
                 payInfo.goods = cfgTable[payInfo.price]
             end
-            self:createPay(method):doPay(payInfo)
+			payInfo.type = method;
+            self.method = self:createPay(method);
+			self.method:doPay(payInfo)
         end
 	end
 
@@ -80,6 +82,10 @@ function PayHelper:createWeileView(paydata)
 		local methodObj = weilePayView.new(selectedPayMethod, clone(payInfo), viewData)
         methodObj:addTo(cc.Director:getInstance():getRunningScene(), 1000, FishCD.TAG.PAY_VIEW_TAG);
 	end
+end
+
+function PayHelper:getBeforePayMethod()
+	return self.method;
 end
 
 

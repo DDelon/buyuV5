@@ -146,6 +146,13 @@ function HallManager:initLayer( )
     self:addChild(self.uiMailBody,FishCD.ORDER_LAYER_TRUE)
     self.uiMailBody:setVisible(false)
     self.uiMailBody:setScale(self.scaleMin_)
+
+    --意见反馈
+    self.uiFeedback = require("hall/Feedback/Feedback").create()
+    self.uiFeedback:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
+    self:addChild(self.uiFeedback,FishCD.ORDER_LAYER_TRUE)
+    self.uiFeedback:setVisible(false)
+    self.uiFeedback:setScale(self.scaleMin_)
     
     --锻造
     self.uiForgedLayer = require("hall/Forged/Forged").create()
@@ -172,12 +179,12 @@ end
 --初始化朋友场
 function HallManager:initFriendLayer( )
 
-    --代开房间
-    self.uiHelpOpenLayer = require("hall/FriendRoom/FriendHelpOpen/HelpOpenLayer").create()
-    self.uiHelpOpenLayer:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
-    self:addChild(self.uiHelpOpenLayer,FishCD.ORDER_LAYER_TRUE)
-    self.uiHelpOpenLayer:setVisible(false)   
-    self.uiHelpOpenLayer:setScale(self.scaleMin_)
+    -- --代开房间
+    -- self.uiHelpOpenLayer = require("hall/FriendRoom/FriendHelpOpen/HelpOpenLayer").create()
+    -- self.uiHelpOpenLayer:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
+    -- self:addChild(self.uiHelpOpenLayer,FishCD.ORDER_LAYER_TRUE)
+    -- self.uiHelpOpenLayer:setVisible(false)   
+    -- self.uiHelpOpenLayer:setScale(self.scaleMin_)
     
     --创建面板
     self.uiCreateLayer = require("hall/FriendRoom/CreateLayer").create()
@@ -674,6 +681,9 @@ function HallManager:upDataPlayerInfo( netData )
         --更新按键位置
         self.view:upDataBtnArrPos()
 
+        --更新是否代开权限
+        self:updateIsCanHelpOpen()
+
         --刷新朋友场代开状态
         if self.uiHelpOpenLayer ~= nil then
             self.uiHelpOpenLayer:isUpdateNetData()
@@ -681,6 +691,28 @@ function HallManager:upDataPlayerInfo( netData )
 
         --播放音乐
         FishGI.AudioControl:playLayerBgMusic()
+
+end
+
+--更新玩家数据到c++
+function HallManager:updateIsCanHelpOpen()
+    local isCan = FishGI.WebUserData:isNormalOpen()
+    if isCan == nil then
+        isCan = false
+    end
+    self.uiFriendRoom:setIsCanHelpOpen(isCan)
+    self.uiCreateLayer:setIsCanHelpOpen(isCan)
+
+    if isCan then
+        if self.uiHelpOpenLayer == nil then
+            --代开房间
+            self.uiHelpOpenLayer = require("hall/FriendRoom/FriendHelpOpen/HelpOpenLayer").create()
+            self.uiHelpOpenLayer:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
+            self:addChild(self.uiHelpOpenLayer,FishCD.ORDER_LAYER_TRUE - 1)
+            self.uiHelpOpenLayer:setVisible(false)   
+            self.uiHelpOpenLayer:setScale(self.scaleMin_)
+        end
+    end
 
 end
 

@@ -502,13 +502,16 @@ function GameScene:startGame(data)
             delayTime = fishGroupComingLeftSeconds-FishCD.FISH_GROUP_COMING_CLEAR_TIME;
         end
         local function clearFunc()
+            FishGI.isFishGroupCome = false;
             if self.isFishCome then
                 self.isFishCome = false;
                 return;
             end
+            
             FishGI.GameEffect:fishGroupCome()
             LuaCppAdapter:getInstance():fishAccelerateOut();
         end
+        FishGI.isFishGroupCome = true;
         FishGF.delayExcute(delayTime, clearFunc)
     end
 

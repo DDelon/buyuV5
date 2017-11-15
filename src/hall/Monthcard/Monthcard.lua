@@ -88,22 +88,23 @@ function Monthcard:onClickByType( sender )
 
     if self.showType == 1 then
         local data = {}
-        data["id"] = self.monthCardId;
+        data["count"] = 1;
+        data["num"] = "";
+        data["unit"] = self.unit;
         data["goods"] = self.monthCardId;
-        data["name"] = self.unit;
-        data["body"] = self.unit.." "..self.monthCardId.." x1";
-        data["money"] = self.recharge;
-        data["price"] = self.recharge/100;
-        data["type"] = tonumber(self.recharge_type);
-        data["rechargeType"] = 3;
-        data["type"] = 3
-        data["autobuy"] = 1;
-        data["subject"] = self.unit;
+        data["app_id"] = APP_ID;
+        data["channel_id"] = CHANNEL_ID;
+        data["version"] = table.concat( HALL_APP_VERSION, ".");
+        data["money"] =  self.recharge;
+        data["virtual"] = 0;
+        data["autobuy"] = 0;
         data["ingame"] = (FishGI.GAME_STATE == 3 and GAME_ID or 0);
         data["roomid"] = 0;
-        data["count"] = 1;
         data["debug"] = 0;
-        data["udid"] = Helper.GetDeviceCode()
+        data["userid"] = FishGI.hallScene.net:getUserId();
+        data["devicecode"] = Helper.GetDeviceCode();
+        data["region"] = 0;
+        data["domain"] = "pay.jiaxianghudong.com";
         data["uiObj"] = self;
         FishGI.payHelper:doPay(data);
     elseif self.showType == 2 then

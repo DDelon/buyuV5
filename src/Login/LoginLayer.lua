@@ -4,33 +4,33 @@ local LoginLayer = class("LoginLayer", cc.load("mvc").ViewBase)
 LoginLayer.AUTO_RESOLUTION   = true
 LoginLayer.RESOURCE_FILENAME = "ui/login/uiloginlayer"
 LoginLayer.RESOURCE_BINDING  = {  
-    ["btn_start"]        = { ["varname"] = "btn_start" ,        ["events"]={["event"]="click",["method"]="onClickStart"}},  
-    ["btn_close"]        = { ["varname"] = "btn_close" ,        ["events"]={["event"]="click",["method"]="onClickClose"}},
-    ["spr_logo"]         = { ["varname"] = "spr_logo"  },   
-    ["spr_login_bg"]     = { ["varname"] = "spr_login_bg"  },
+    ["btn_start"]          = { ["varname"] = "btn_start" ,        ["events"]={["event"]="click",["method"]="onClickStart"}},  
+    ["btn_close"]          = { ["varname"] = "btn_close" ,        ["events"]={["event"]="click",["method"]="onClickClose"}},
+    ["spr_logo"]           = { ["varname"] = "spr_logo"  },   
+    ["spr_login_bg"]       = { ["varname"] = "spr_login_bg"  },
     
-    ["btn_accountstart"] = { ["varname"] = "btn_accountstart" , ["events"]={["event"]="click",["method"]="onClickaccountstart"}},
-    ["btn_openlist"]     = { ["varname"] = "btn_openlist" ,     ["events"]={["event"]="click",["method"]="onClickopenlist"}},
+    ["btn_accountstart"]   = { ["varname"] = "btn_accountstart" , ["events"]={["event"]="click",["method"]="onClickaccountstart"}},
+    ["btn_openlist"]       = { ["varname"] = "btn_openlist" ,     ["events"]={["event"]="click",["method"]="onClickopenlist"}},
     
-    ["text_account"]     = { ["varname"] = "text_account"  },
+    ["text_account"]       = { ["varname"] = "text_account"  },
     
-    ["image_account_bg"] = { ["varname"] = "image_account_bg"  },    
+    ["image_account_bg"]   = { ["varname"] = "image_account_bg"  },    
     
-    ["text_notice"]      = { ["varname"] = "text_notice"  },    
-    ["text_ver"]         = { ["varname"] = "text_ver"  },
-    ["btn_qq"]           = { ["varname"] = "btn_qq" ,           ["events"]={["event"]="click",["method"]="onClickqq"}},
-    ["btn_wechat"]       = { ["varname"] = "btn_wechat" ,       ["events"]={["event"]="click",["method"]="onClickwechat"}},
+    ["text_notice"]        = { ["varname"] = "text_notice"  },    
+    ["text_ver"]           = { ["varname"] = "text_ver"  },
+    ["btn_qq"]             = { ["varname"] = "btn_qq" ,           ["events"]={["event"]="click",["method"]="onClickqq"}},
+    ["btn_wechat"]         = { ["varname"] = "btn_wechat" ,       ["events"]={["event"]="click",["method"]="onClickwechat"}},
     
-    ["btn_retrieve"]     = { ["varname"] = "btn_retrieve" ,     ["events"]={["event"]="click",["method"]="onClickretrieve"}},
-
-    ["node_bg_up_left"] = { ["varname"] = "node_bg_up_left"  },    
-    ["node_bg_up_right"] = { ["varname"] = "node_bg_up_right"  }, 
-    ["node_bg_down_left"] = { ["varname"] = "node_bg_down_left"  }, 
+    ["btn_retrieve"]       = { ["varname"] = "btn_retrieve" ,     ["events"]={["event"]="click",["method"]="onClickretrieve"}},
+    
+    ["node_bg_up_left"]    = { ["varname"] = "node_bg_up_left"  },    
+    ["node_bg_up_right"]   = { ["varname"] = "node_bg_up_right"  }, 
+    ["node_bg_down_left"]  = { ["varname"] = "node_bg_down_left"  }, 
     ["node_bg_down_right"] = { ["varname"] = "node_bg_down_right"  }, 
-
-    ["node_btn"] = { ["varname"] = "node_btn"  }, 
+    
+    ["node_btn"]           = { ["varname"] = "node_btn"  }, 
     ["node_btn_qq_wechat"] = { ["varname"] = "node_btn_qq_wechat"  }, 
-    ["image_account_bg"] = { ["varname"] = "image_account_bg"  }, 
+    ["image_account_bg"]   = { ["varname"] = "image_account_bg"  }, 
 
 }
 

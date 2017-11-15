@@ -5,11 +5,11 @@ RuleIntroduction.RESOURCE_FILENAME = "ui/hall/friend/uiruleintroduction"
 RuleIntroduction.RESOURCE_BINDING  = {    
     ["panel"]           = { ["varname"] = "panel" }, 
     
-    ["list_update"]     = { ["varname"] = "list_update" ,         ["nodeType"]="viewlist"   },
+    ["list_update"]     = { ["varname"] = "list_update" ,           ["nodeType"]="viewlist"   },
     ["img_listview_bg"] = { ["varname"] = "img_listview_bg" },
     
-    ["btn_sure"]        = { ["varname"] = "btn_sure" ,         ["events"]={["event"]="click",["method"]="onClicksure"}},   
-    ["btn_close"]       = { ["varname"] = "btn_close" ,        ["events"]={["event"]="click",["method"]="onClickclose"}}, 
+    ["btn_sure"]        = { ["varname"] = "btn_sure" ,              ["events"]={["event"]="click",["method"]="onClicksure"}},   
+    ["btn_close"]       = { ["varname"] = "btn_close" ,             ["events"]={["event"]="click",["method"]="onClickclose"}}, 
 }
 
 function RuleIntroduction:onCreate( ... )

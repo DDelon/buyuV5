@@ -1,10 +1,10 @@
 local UpDate = class("UpDate", cc.load("mvc").ViewBase)
 
-UpDate.messageIndex = 0
-UpDate.preloadData = {}
-UpDate.AUTO_RESOLUTION = true
+UpDate.messageIndex      = 0
+UpDate.preloadData       = {}
+UpDate.AUTO_RESOLUTION   = true
 UpDate.RESOURCE_FILENAME = "ui/loading/uiUpDate"
-UpDate.RESOURCE_BINDING = {    
+UpDate.RESOURCE_BINDING  = {    
     ["bar_update"]         = { ["varname"] = "bar_update" }, 
     
     ["spr_loading_circle"] = { ["varname"] = "spr_loading_circle" },
@@ -13,9 +13,9 @@ UpDate.RESOURCE_BINDING = {
     ["text_word_1"]        = { ["varname"] = "text_word_1" }, 
     ["text_sizeper"]       = { ["varname"] = "text_sizeper" },   
     ["text_message"]       = { ["varname"] = "text_message" },  
-
-    ["node_bg_up_left"] = { ["varname"] = "node_bg_up_left"  },    
-    ["node_bg_down_left"] = { ["varname"] = "node_bg_down_left"  }, 
+    
+    ["node_bg_up_left"]    = { ["varname"] = "node_bg_up_left"  },    
+    ["node_bg_down_left"]  = { ["varname"] = "node_bg_down_left"  }, 
     ["node_bg_down_right"] = { ["varname"] = "node_bg_down_right"  }, 
 
 }

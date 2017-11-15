@@ -3,46 +3,46 @@ local CreateLayer = class("CreateLayer", cc.load("mvc").ViewBase)
 CreateLayer.AUTO_RESOLUTION   = false
 CreateLayer.RESOURCE_FILENAME = "ui/hall/friend/uicreatelayer"
 CreateLayer.RESOURCE_BINDING  = {    
-    ["panel"]         = { ["varname"] = "panel" }, 
-    ["btn_sure"]        = { ["varname"] = "btn_sure" ,         ["events"]={["event"]="click",["method"]="onClicksure"}},   
-    ["btn_close"]       = { ["varname"] = "btn_close" ,        ["events"]={["event"]="click",["method"]="onClickclose"}}, 
-
+    ["panel"]          = { ["varname"] = "panel" }, 
+    ["btn_sure"]       = { ["varname"] = "btn_sure" ,           ["events"]={["event"]="click",["method"]="onClicksure"}},   
+    ["btn_close"]      = { ["varname"] = "btn_close" ,          ["events"]={["event"]="click",["method"]="onClickclose"}}, 
+    
     ["btn_prop_1"]     = { ["varname"] = "btn_prop_1" ,         ["events"]={["event"]="click_color",["method"]="onClickprop_1"}},
     ["btn_prop_2"]     = { ["varname"] = "btn_prop_2" ,         ["events"]={["event"]="click_color",["method"]="onClickprop_2"}},
-
-    ["btn_count_1"]     = { ["varname"] = "btn_count_1" ,         ["events"]={["event"]="click_color",["method"]="onClickcount_1"}},
-    ["btn_count_2"]     = { ["varname"] = "btn_count_2" ,         ["events"]={["event"]="click_color",["method"]="onClickcount_2"}},
-    ["btn_count_3"]     = { ["varname"] = "btn_count_3" ,         ["events"]={["event"]="click_color",["method"]="onClickcount_3"}},
-
+    
+    ["btn_count_1"]    = { ["varname"] = "btn_count_1" ,        ["events"]={["event"]="click_color",["method"]="onClickcount_1"}},
+    ["btn_count_2"]    = { ["varname"] = "btn_count_2" ,        ["events"]={["event"]="click_color",["method"]="onClickcount_2"}},
+    ["btn_count_3"]    = { ["varname"] = "btn_count_3" ,        ["events"]={["event"]="click_color",["method"]="onClickcount_3"}},
+    
     ["btn_time_1"]     = { ["varname"] = "btn_time_1" ,         ["events"]={["event"]="click_color",["method"]="onClicktime_1"}},
     ["btn_time_2"]     = { ["varname"] = "btn_time_2" ,         ["events"]={["event"]="click_color",["method"]="onClicktime_2"}},
-
-
+    
+    
     ["btn_help_1"]     = { ["varname"] = "btn_help_1" ,         ["events"]={["event"]="click_color",["method"]="onClickhelp_1"}},
     ["btn_help_2"]     = { ["varname"] = "btn_help_2" ,         ["events"]={["event"]="click_color",["method"]="onClickhelp_2"}},
-
-    ["btn_cradtype_1"]     = { ["varname"] = "btn_cradtype_1" ,         ["events"]={["event"]="click_color",["method"]="onClickcradtype_1"}},
-    ["btn_cradtype_2"]     = { ["varname"] = "btn_cradtype_2" ,         ["events"]={["event"]="click_color",["method"]="onClickcradtype_2"}},
-
+    
+    ["btn_cradtype_1"] = { ["varname"] = "btn_cradtype_1" ,     ["events"]={["event"]="click_color",["method"]="onClickcradtype_1"}},
+    ["btn_cradtype_2"] = { ["varname"] = "btn_cradtype_2" ,     ["events"]={["event"]="click_color",["method"]="onClickcradtype_2"}},
+    
     ["fnt_count"]      = { ["varname"] = "fnt_count" }, 
 }
 
 CreateLayer.ch_list  = {    
-    ["text_1"]         = { ["str"] = FishGF.getChByIndex(800000322) }, 
-    ["text_2"]         = { ["str"] = FishGF.getChByIndex(800000323)  }, 
-    ["text_3"]         = { ["str"] = FishGF.getChByIndex(800000324) }, 
-    ["text_4"]         = { ["str"] = FishGF.getChByIndex(800000325) }, 
-    ["text_5"]         = { ["str"] = FishGF.getChByIndex(800000326) }, 
-    ["text_6"]         = { ["str"] = FishGF.getChByIndex(800000327)  }, 
-    ["text_7"]         = { ["str"] = FishGF.getChByIndex(800000328)  }, 
-
-    ["text_8"]         = { ["str"] = FishGF.getChByIndex(800000355)  }, 
-    ["text_9"]         = { ["str"] = FishGF.getChByIndex(800000356)  }, 
+    ["text_1"]          = { ["str"] = FishGF.getChByIndex(800000322) }, 
+    ["text_2"]          = { ["str"] = FishGF.getChByIndex(800000323)  }, 
+    ["text_3"]          = { ["str"] = FishGF.getChByIndex(800000324) }, 
+    ["text_4"]          = { ["str"] = FishGF.getChByIndex(800000325) }, 
+    ["text_5"]          = { ["str"] = FishGF.getChByIndex(800000326) }, 
+    ["text_6"]          = { ["str"] = FishGF.getChByIndex(800000327)  }, 
+    ["text_7"]          = { ["str"] = FishGF.getChByIndex(800000328)  }, 
+    
+    ["text_8"]          = { ["str"] = FishGF.getChByIndex(800000355)  }, 
+    ["text_9"]          = { ["str"] = FishGF.getChByIndex(800000356)  }, 
     ["text_10"]         = { ["str"] = FishGF.getChByIndex(800000355)  }, 
     ["text_11"]         = { ["str"] = FishGF.getChByIndex(800000356)  }, 
-
-    ["text_word_count"]         = { ["str"] = FishGF.getChByIndex(800000329)  }, 
-    ["text_cell"]         = { ["str"] = FishGF.getChByIndex(800000330)  },     
+    
+    ["text_word_count"] = { ["str"] = FishGF.getChByIndex(800000329)  }, 
+    ["text_cell"]       = { ["str"] = FishGF.getChByIndex(800000330)  },     
 }
 
 function CreateLayer:onCreate( ... )
@@ -55,6 +55,7 @@ function CreateLayer:onCreate( ... )
         end
     end
 
+    self.firstPosY = self:child("node_1"):getPositionY()
     self.propList = {}
     self.createData = {}
     self:showType()
@@ -72,7 +73,7 @@ function CreateLayer:showType(roomPropType,roomPeopleCountType,roomDurationType,
         roomPropType = 1
     end
     if roomPeopleCountType == nil then --默认人数类型，0:2人，1:3人，2:4人
-        roomPeopleCountType = 0
+        roomPeopleCountType = 2
     end
     if roomDurationType == nil then --默认时长类型,0:8分钟，1,24分钟
         roomDurationType = 0
@@ -94,14 +95,15 @@ end
 
 function CreateLayer:setIsCanHelpOpen( isCanHelpOpen)
 
-    local dis = 60
+    local dis = 75
     local showCount = 5
+    local firstPosY = self.firstPosY
     if not isCanHelpOpen then
-        dis = 80
+        dis = 110
         showCount = 3
+        firstPosY = firstPosY - 30
     end
 
-    local firstPosY = self:child("node_1"):getPositionY()
     for i=1,5 do
         local node = self:child("node_"..i)
         if i <= showCount then
@@ -260,10 +262,12 @@ function CreateLayer:buttonClicked(viewTag, btnTag)
         self.createData[viewTag] = btnTag
     elseif viewTag == "agent" then 
         self.createData[viewTag] = btnTag
-        self:buttonClicked("roomCardType", 1)
+        if btnTag == true then
+            self:buttonClicked("roomCardType", 1)
+        end
     elseif viewTag == "roomCardType" then --房卡类型 roomCardType:0,游戏内房卡，1，平台房卡
         if self.createData.agent == true and btnTag == 0 then
-            FishGF.showSystemTip(nil, 800000181, 3)
+            FishGF.showSystemTip(nil, 800000364, 3)
             return 
         end
         self.createData[viewTag] = btnTag

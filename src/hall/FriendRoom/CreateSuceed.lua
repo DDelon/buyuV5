@@ -66,7 +66,7 @@ function CreateSuceed:onClickshare( sender )
     local createData = FishGI.hallScene.uiCreateLayer.createData
     local roomPropType = FishGF.getChByIndex(800000333)..FishGF.getChByIndex(800000218)..(FishGF.changeRoomData("roomPropType",createData.roomPropType).str)
     local roomPeopleCountType = FishGF.getChByIndex(800000334)..FishGF.getChByIndex(800000218)..(FishGF.changeRoomData("roomPeopleCountType",createData.roomPeopleCountType).str)
-    local roomDurationType = FishGF.getChByIndex(800000334)..FishGF.getChByIndex(800000218)..(FishGF.changeRoomData("roomDurationType",createData.roomDurationType).str)
+    local roomDurationType = FishGF.getChByIndex(800000335)..FishGF.getChByIndex(800000218)..(FishGF.changeRoomData("roomDurationType",createData.roomDurationType).str)
     local des = roomPropType.."\n"..roomPeopleCountType.."\n"..roomDurationType
     local targetPlatform = cc.Application:getInstance():getTargetPlatform()
     if (cc.PLATFORM_OS_WINDOWS ~= targetPlatform) then

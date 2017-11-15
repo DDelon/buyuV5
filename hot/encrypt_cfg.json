@@ -1,0 +1,8 @@
+[
+    "res/*.png",
+	"res/*.jpg",
+    "res/*.jpeg",
+    "src/Game/GameNet.lua",
+    "src/Game/Friend/GameFriendNet.lua",
+    "src/version.lua"
+]
